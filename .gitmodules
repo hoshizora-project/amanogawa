@@ -1,3 +1,6 @@
 [submodule "src/external/pybind11"]
 	path = src/external/pybind11
 	url = git@github.com:pybind/pybind11.git
+[submodule "src/external/arrow"]
+	path = src/external/arrow
+	url = git@github.com:apache/arrow.git

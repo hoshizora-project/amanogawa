@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.7)
-#project(nagare)
+project(nagare)
 
 #set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
+#set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -O0 -DSPDLOG_DEBUG_ON")
@@ -11,10 +12,10 @@ add_library(from_csv SHARED src/nagare/plugin/extract/from_csv.cpp)
 add_library(add SHARED src/nagare/plugin/transform/add.cpp)
 add_library(to_plain SHARED src/nagare/plugin/load/to_plain.cpp)
 
-#set(SOURCE_FILES src/nagare/main.cpp)
-#INCLUDE_DIRECTORIES(src)
-
+set(SOURCE_FILES src/nagare/main.cpp)
 add_subdirectory(src/external/pybind11)
+#add_subdirectory(src/external/arrow/cpp) # need manual build...
+INCLUDE_DIRECTORIES(src src/external/arrow/cpp/src)
 
 if (UNIX AND NOT APPLE)
     # linux
@@ -25,3 +26,6 @@ endif ()
 
 #add_executable(nagare ${SOURCE_FILES})
 pybind11_add_module(nagare SHARED src/nagare/main.cpp)
+find_library(LIB_ARROW NAMES libarrow.a PATHS src/external/arrow/cpp/debug/debug)
+target_link_libraries(nagare ${LIB_ARROW})
+target_link_libraries(nagare dl)

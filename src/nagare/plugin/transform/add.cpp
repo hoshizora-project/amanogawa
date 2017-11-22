@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
 
-namespace nagere::plugin::transform {
+//namespace nagere::plugin::transform {
   extern "C" std::vector<std::string> transform(std::vector<std::string>);
   std::vector<std::string> transform(std::vector<std::string> data) {
     printf("transform is called\n");
@@ -10,4 +10,4 @@ namespace nagere::plugin::transform {
     }
     return data;
   }
-}
+//}

@@ -2,7 +2,7 @@
 #include <vector>
 #include "csv.h"
 
-namespace nagere::plugin::extraction {
+//namespace nagere::plugin::extraction {
   extern "C" std::vector<std::string> extract(const std::string &);
   std::vector<std::string> extract(const std::string &file_name) {
     printf("extract is called\n");
@@ -17,4 +17,4 @@ namespace nagere::plugin::extraction {
 
     return result;
   }
-}
+//}
