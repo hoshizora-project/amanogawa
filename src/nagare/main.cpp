@@ -47,8 +47,11 @@ int hoge(const std::string &dll_name) {
 
   printf("a\n");
 
-  //auto mode = RTLD_LOCAL; // mac
+#ifdef __APPLE__
+  auto mode = RTLD_LOCAL; // mac
+#elif __linux__
   auto mode = RTLD_LAZY; // linux
+#endif
   void *extractor = dlopen("libfrom_csv.so", mode);
   void *transformer = dlopen("libadd.so", mode);
   void *loader = dlopen("libto_plain.so", mode);
