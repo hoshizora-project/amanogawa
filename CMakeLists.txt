@@ -20,12 +20,13 @@ INCLUDE_DIRECTORIES(src src/external/arrow/cpp/src)
 if (UNIX AND NOT APPLE)
     # linux
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    set(LIBS_EXT a)
 else ()
     # macos
+    set(LIBS_EXT dylib)
 endif ()
 
 #add_executable(nagare ${SOURCE_FILES})
 pybind11_add_module(nagare SHARED src/nagare/main.cpp)
-find_library(LIB_ARROW NAMES libarrow.a PATHS src/external/arrow/cpp/debug/debug)
-target_link_libraries(nagare ${LIB_ARROW})
-target_link_libraries(nagare dl)
+find_library(LIB_ARROW NAMES libarrow.${LIBS_EXT} PATHS src/external/arrow/cpp/debug/debug)
+target_link_libraries(nagare dl ${LIB_ARROW})

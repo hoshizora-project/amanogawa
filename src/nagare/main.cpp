@@ -49,12 +49,14 @@ int hoge(const std::string &dll_name) {
 
 #ifdef __APPLE__
   auto mode = RTLD_LOCAL; // mac
+  const std::string ext = "dylib";
 #elif __linux__
   auto mode = RTLD_LAZY; // linux
+  const std::string ext = "so";
 #endif
-  void *extractor = dlopen("libfrom_csv.so", mode);
-  void *transformer = dlopen("libadd.so", mode);
-  void *loader = dlopen("libto_plain.so", mode);
+  void *extractor = dlopen(("libfrom_csv." + ext).c_str(), mode);
+  void *transformer = dlopen(("libadd." + ext).c_str(), mode);
+  void *loader = dlopen(("libto_plain." + ext).c_str(), mode);
 
   printf("a\n");
   if(extractor == nullptr) {
