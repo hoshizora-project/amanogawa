@@ -70,13 +70,13 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    name='hoshizora-nagare',
+    name='amanogawa',
     version='0.0.1',
     author='amaya',
     author_email='mail@sapphire.in.net',
     description='To appear',
     long_description='',
-    ext_modules=[CMakeExtension('hoshizora-nagare')],
+    ext_modules=[CMakeExtension('amanogawa')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )

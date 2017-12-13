@@ -1,0 +1,12 @@
+[source]
+[source.format.csv]
+[source.encoding.gzip]
+#[confluence]
+
+
+[flow]
+
+[sink]
+[sink.format.csv]
+delimiter = ","
+#[sink.encoding.gzip]
