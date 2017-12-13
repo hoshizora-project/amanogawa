@@ -7,9 +7,10 @@ namespace amanogawa {
 namespace core {
 struct Column {
   std::string name;
+  std::string type; // TODO
   uint32_t index;
 };
-}
-}
+} // namespace core
+} // namespace amanogawa
 
 #endif

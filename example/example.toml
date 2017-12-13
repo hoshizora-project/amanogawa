@@ -1,10 +1,19 @@
 [source]
 [source.format.csv]
-[source.encoding.gzip]
+[[source.format.csv.columns]]
+name = "id"
+type = "int"
+[[source.format.csv.columns]]
+name = "name"
+type = "string"
+
+#[source.encoding.gzip]
+
 #[confluence]
 
-
 [flow]
+
+#[branch]
 
 [sink]
 [sink.format.csv]

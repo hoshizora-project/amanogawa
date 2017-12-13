@@ -5,7 +5,7 @@ project(amanogawa)
 #set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -O0 -DSPDLOG_DEBUG_ON")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wno-return-type-c-linkage -O0 -DSPDLOG_DEBUG_ON")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 add_library(source_file SHARED src/amanogawa/plugin/source/file/file.cpp)

@@ -5,7 +5,15 @@
 #include <vector>
 
 namespace amanogawa {
-std::vector<std::string> spring(const std::string &file_name);
-}
+namespace plugin {
+struct SourcePlugin {
+  virtual std::vector<std::string>
+  spring(const std::string &file_name) const = 0;
+};
+
+using get_source_plugin_return_t = std::unique_ptr<SourcePlugin>;
+using get_source_plugin_t = get_source_plugin_return_t (*)();
+} // namespace plugin
+} // namespace amanogawa
 
 #endif
