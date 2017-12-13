@@ -1,6 +1,7 @@
 #ifndef AMANOGAWA_FLOW_H
 #define AMANOGAWA_FLOW_H
 
+#include "amanogawa/core/confing.h"
 #include <string>
 #include <vector>
 
@@ -12,7 +13,7 @@ struct FlowPlugin {
 };
 
 using get_flow_plugin_return_t = std::unique_ptr<FlowPlugin>;
-using get_flow_plugin_t = get_flow_plugin_return_t (*)();
+using get_flow_plugin_t = get_flow_plugin_return_t (*)(const core::Config &);
 } // namespace plugin
 } // namespace amanogawa
 

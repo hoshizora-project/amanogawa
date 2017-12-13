@@ -1,7 +1,9 @@
+#include "amanogawa/core/confing.h"
+#include "amanogawa/include/source.h"
+#include "amanogawa/plugin/source/file/csv.h"
+#include <amanogawa/core/confing.h>
 #include <string>
 #include <vector>
-#include "amanogawa/plugin/source/file/csv.h"
-#include "amanogawa/include/source.h"
 
 namespace amanogawa {
 namespace plugin {
@@ -9,7 +11,11 @@ namespace source {
 namespace file {
 using amanogawa::plugin::SourcePlugin;
 
-struct SourceFilePlugin: SourcePlugin {
+struct SourceFilePlugin : SourcePlugin {
+  const core::Config config;
+
+  explicit SourceFilePlugin(const core::Config &config) : config(config) {}
+
   std::vector<std::string> spring(const std::string &file_name) const {
     printf("source is called\n");
     io::CSVReader<2> in(file_name);
@@ -25,10 +31,11 @@ struct SourceFilePlugin: SourcePlugin {
   }
 };
 
-extern "C" get_source_plugin_return_t get_source_plugin() {
-  return std::make_unique<SourceFilePlugin>();
+extern "C" get_source_plugin_return_t
+get_source_plugin(const core::Config &config) {
+  return std::make_unique<SourceFilePlugin>(config);
 }
-}
-}
-}
-}
+} // namespace file
+} // namespace source
+} // namespace plugin
+} // namespace amanogawa

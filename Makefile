@@ -41,7 +41,7 @@ scan-release:
 
 .PHONY: format
 format:
-	zsh -c 'clang-format -i -style=file src/amanogawa/**/*.h'
+	zsh -c 'clang-format -i -style=file src/amanogawa/**/*.(h|cpp)'
 	zsh -c 'clang-format -i -style=file src/amanogawa/main.cpp'
 
 .PHONY: clean-debug

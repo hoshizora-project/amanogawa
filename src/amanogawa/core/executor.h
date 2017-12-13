@@ -60,9 +60,9 @@ void execute(const std::string &config_file) {
     printf("%s\n", dlerror());
   }
 
-  const auto &source_plugin = get_source_plugin();
-  const auto &flow_plugin = get_flow_plugin();
-  const auto &sink_plugin = get_sink_plugin();
+  const auto &source_plugin = get_source_plugin(conf);
+  const auto &flow_plugin = get_flow_plugin(conf);
+  const auto &sink_plugin = get_sink_plugin(conf);
 
   auto data = source_plugin->spring("raw.csv");
   printf("a\n");
