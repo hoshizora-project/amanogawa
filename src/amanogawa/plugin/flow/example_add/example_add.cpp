@@ -12,11 +12,11 @@ struct FlowExampleAddPlugin : FlowPlugin {
 
   explicit FlowExampleAddPlugin(const core::Config &config) : config(config) {}
 
-  std::vector<std::string> flow(std::vector<std::string> &data) const {
+  std::vector<core::Row> flow(std::vector<core::Row> &data) const {
     printf("flow is called\n");
-    for (auto &row : data) {
-      row += "!";
-    }
+    // for (auto &row : data) {
+    // row += "!";
+    //}
     return data;
   }
 };

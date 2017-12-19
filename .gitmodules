@@ -7,3 +7,6 @@
 [submodule "src/cpptoml"]
 	path = src/cpptoml
 	url = git@github.com:skystrife/cpptoml.git
+[submodule "src/text-csv"]
+	path = src/text-csv
+	url = git@github.com:roman-kashitsyn/text-csv.git

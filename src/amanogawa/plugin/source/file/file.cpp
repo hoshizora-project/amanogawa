@@ -1,7 +1,9 @@
+#include "amanogawa/core/column_info.h"
 #include "amanogawa/core/confing.h"
+#include "amanogawa/core/row.h"
 #include "amanogawa/include/source.h"
 #include "amanogawa/plugin/source/file/csv.h"
-#include <amanogawa/core/confing.h>
+#include "text-csv/include/text/csv/istream.hpp"
 #include <string>
 #include <vector>
 
@@ -13,18 +15,49 @@ using amanogawa::plugin::SourcePlugin;
 
 struct SourceFilePlugin : SourcePlugin {
   const core::Config config;
+  core::ColumnsInfo cols_info;
 
-  explicit SourceFilePlugin(const core::Config &config) : config(config) {}
+  explicit SourceFilePlugin(const core::Config &config) : config(config) {
+    const auto cols =
+        config.source->get_table_array_qualified("format.csv.columns");
+    size_t idx = 0;
+    for (const auto &col : *cols) {
+      cols_info.emplace_back(core::ColumnInfo(
+          *(col->get_as<std::string>("name")),
+          core::type_map.at(*(col->get_as<std::string>("type"))), idx++));
+    }
+  }
 
-  std::vector<std::string> spring(const std::string &file_name) const {
+  std::vector<core::Row> spring(const std::string &file_name) const {
     printf("source is called\n");
-    io::CSVReader<2> in(file_name);
-    in.read_header(io::ignore_extra_column, "id", "name");
-    uint32_t id;
-    std::string name;
-    std::vector<std::string> result;
-    while (in.read_row(id, name)) {
-      result.emplace_back(std::to_string(id) + "|" + name);
+
+    std::vector<core::Row> result;
+
+    std::ifstream fs(file_name);
+    text::csv::csv_istream csvs(fs);
+    const auto num_cols = cols_info.size();
+
+    while (csvs) {
+      core::Row row;
+      row.reserve(num_cols);
+      for (const auto &col_info : cols_info) {
+        const auto type = col_info.type;
+        if (type == typeid(int)) {
+          int i;
+          csvs >> i;
+          row.emplace_back(i);
+        } else if (type == typeid(double)) {
+          double d;
+          csvs >> d;
+          row.emplace_back(d);
+        } else if (type == typeid(std::string)) {
+          std::string s;
+          csvs >> s;
+          row.emplace_back(s);
+        } else {
+        }
+      }
+      result.emplace_back(row);
     }
 
     return result;

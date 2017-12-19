@@ -3,7 +3,7 @@ project(amanogawa)
 
 #set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
 #set(CMAKE_CXX_COMPILER clang++)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wno-return-type-c-linkage -O0 -DSPDLOG_DEBUG_ON")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
@@ -12,7 +12,7 @@ add_library(source_file SHARED src/amanogawa/plugin/source/file/file.cpp)
 add_library(flow_example_add SHARED src/amanogawa/plugin/flow/example_add/example_add.cpp)
 add_library(sink_file SHARED src/amanogawa/plugin/sink/file/file.cpp)
 
-set(SOURCE_FILES src/amanogawa/main.cpp src/amanogawa/core/executor.h src/amanogawa/core/confing.h src/amanogawa/core/column.h src/amanogawa/include/common.h src/amanogawa/include/flow.h src/amanogawa/include/sink.h src/amanogawa/include/source.h)
+set(SOURCE_FILES src/amanogawa/main.cpp src/amanogawa/core/executor.h src/amanogawa/core/confing.h src/amanogawa/core/column_info.h src/amanogawa/include/common.h src/amanogawa/include/flow.h src/amanogawa/include/sink.h src/amanogawa/include/source.h src/amanogawa/core/box.h src/amanogawa/core/any.h src/amanogawa/core/row.h src/amanogawa/core/table_info.h)
 add_subdirectory(src/pybind11)
 #add_subdirectory(src/arrow/cpp) # need manual build...
 INCLUDE_DIRECTORIES(src src/arrow/cpp/src src/cpptoml/include)

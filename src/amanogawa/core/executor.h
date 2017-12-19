@@ -43,12 +43,12 @@ void execute(const std::string &config_file) {
     printf("%s\n", dlerror());
   }
 
-  const auto get_source_plugin = (amanogawa::plugin::get_source_plugin_t)dlsym(
+  const auto get_source_plugin = (plugin::get_source_plugin_t)dlsym(
       lib_source, func_name::get_source_plugin);
-  const auto get_flow_plugin = (amanogawa::plugin::get_flow_plugin_t)dlsym(
-      lib_flow, func_name::get_flow_plugin);
-  const auto get_sink_plugin = (amanogawa::plugin::get_sink_plugin_t)dlsym(
-      lib_sink, func_name::get_sink_plugin);
+  const auto get_flow_plugin =
+      (plugin::get_flow_plugin_t)dlsym(lib_flow, func_name::get_flow_plugin);
+  const auto get_sink_plugin =
+      (plugin::get_sink_plugin_t)dlsym(lib_sink, func_name::get_sink_plugin);
 
   if (get_source_plugin == nullptr) {
     printf("%s\n", dlerror());
