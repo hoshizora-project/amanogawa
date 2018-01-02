@@ -37,7 +37,7 @@ public:
   }
 
   template <class T> T sym(const std::string &func_name) {
-    auto func = ::dlsym(handle, func_name.c_str());
+    auto func = ::dlsym(this->handle, func_name.c_str());
     if (func != nullptr) {
       return reinterpret_cast<T>(func);
     } else {

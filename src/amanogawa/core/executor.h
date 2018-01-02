@@ -3,12 +3,12 @@
 
 #include "amanogawa/core/confing.h"
 #include "amanogawa/core/dl.h"
+#include "amanogawa/core/util.h"
 #include "amanogawa/include/common.h"
 #include "amanogawa/include/flow.h"
 #include "amanogawa/include/sink.h"
 #include "amanogawa/include/source.h"
 #include "arrow/api.h"
-#include "spdlog/spdlog.h"
 #include <dlfcn.h>
 #include <iostream>
 #include <string>
@@ -19,10 +19,9 @@
 
 namespace amanogawa {
 namespace core {
-static const auto logger = spdlog::stderr_color_mt("amanogawa executor");
-
 void execute(const std::string &config_file) {
-  auto conf = load_config(config_file);
+  const auto logger = get_logger("executor");
+  auto conf = Config::load_from_file(config_file);
 
   const auto lib_source = DL::open("source_file");
   // const auto lib_format = DL::open("format_csv");
