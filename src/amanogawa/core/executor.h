@@ -2,11 +2,13 @@
 #define AMANOGAWA_EXECUTOR_CPP
 
 #include "amanogawa/core/confing.h"
+#include "amanogawa/core/dl.h"
 #include "amanogawa/include/common.h"
 #include "amanogawa/include/flow.h"
 #include "amanogawa/include/sink.h"
 #include "amanogawa/include/source.h"
 #include "arrow/api.h"
+#include "spdlog/spdlog.h"
 #include <dlfcn.h>
 #include <iostream>
 #include <string>
@@ -17,63 +19,36 @@
 
 namespace amanogawa {
 namespace core {
+static const auto logger = spdlog::stderr_color_mt("amanogawa executor");
 
 void execute(const std::string &config_file) {
   auto conf = load_config(config_file);
 
-#ifdef __APPLE__
-  constexpr auto mode = RTLD_LOCAL; // mac
-  const std::string ext = "dylib";
-#elif __linux__
-  constexpr auto mode = RTLD_LAZY; // linux
-  const std::string ext = "so";
-#endif
-  const auto lib_source = dlopen(("libsource_file." + ext).c_str(), mode);
-  // const auto lib_format = dlopen(("libformat_csv." + ext).c_str(), mode);
-  const auto lib_flow = dlopen(("libflow_example_add." + ext).c_str(), mode);
-  const auto lib_sink = dlopen(("libsink_file." + ext).c_str(), mode);
+  const auto lib_source = DL::open("source_file");
+  // const auto lib_format = DL::open("format_csv");
+  const auto lib_flow = DL::open("flow_example_add");
+  const auto lib_sink = DL::open("sink_file");
 
-  if (lib_source == nullptr) {
-    printf("%s\n", dlerror());
-  }
-  if (lib_flow == nullptr) {
-    printf("%s\n", dlerror());
-  }
-  if (lib_sink == nullptr) {
-    printf("%s\n", dlerror());
-  }
-
-  const auto get_source_plugin = (plugin::get_source_plugin_t)dlsym(
-      lib_source, func_name::get_source_plugin);
+  const auto get_source_plugin = lib_source->sym<plugin::get_source_plugin_t>(
+      func_name::get_source_plugin);
+  // const auto get_format_plugin =
+  //    lib_format->sym<plugin::get_format_plugin_t>(func_name::get_format_plugin);
   const auto get_flow_plugin =
-      (plugin::get_flow_plugin_t)dlsym(lib_flow, func_name::get_flow_plugin);
+      lib_flow->sym<plugin::get_flow_plugin_t>(func_name::get_flow_plugin);
   const auto get_sink_plugin =
-      (plugin::get_sink_plugin_t)dlsym(lib_sink, func_name::get_sink_plugin);
-
-  if (get_source_plugin == nullptr) {
-    printf("%s\n", dlerror());
-  }
-  if (get_flow_plugin == nullptr) {
-    printf("%s\n", dlerror());
-  }
-  if (get_sink_plugin == nullptr) {
-    printf("%s\n", dlerror());
-  }
+      lib_sink->sym<plugin::get_sink_plugin_t>(func_name::get_sink_plugin);
 
   const auto &source_plugin = get_source_plugin(conf);
+  // const auto &format_plugin = get_format_plugin(conf);
   const auto &flow_plugin = get_flow_plugin(conf);
   const auto &sink_plugin = get_sink_plugin(conf);
 
   auto data = source_plugin->spring("raw.csv");
-  printf("a\n");
+  logger->info("Source-phase finished");
   auto transformed = flow_plugin->flow(data);
-  printf("a\n");
+  logger->info("Flow-phase finished");
   sink_plugin->drain("result", transformed);
-  printf("a\n");
-
-  dlclose(lib_source);
-  dlclose(lib_flow);
-  dlclose(lib_sink);
+  logger->info("Sink-phase finished");
 }
 
 #ifdef PYTHON

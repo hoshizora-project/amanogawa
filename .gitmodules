@@ -10,3 +10,6 @@
 [submodule "src/text-csv"]
 	path = src/text-csv
 	url = git@github.com:roman-kashitsyn/text-csv.git
+[submodule "src/spdlog"]
+	path = src/spdlog
+	url = git@github.com:gabime/spdlog.git

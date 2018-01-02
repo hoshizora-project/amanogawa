@@ -4,8 +4,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
 #include <typeinfo>
+#include <vector>
 
 namespace amanogawa {
 namespace plugin {

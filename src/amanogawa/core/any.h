@@ -17,10 +17,10 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+#include <cstring>
 #include <stdexcept>
 #include <type_traits>
 #include <typeinfo>
-#include <cstring>
 
 namespace linb {
 
@@ -273,7 +273,7 @@ protected:
 #ifdef ANY_IMPL_FAST_TYPE_INFO_COMPARE
     return &a == &b;
 #else
-    //return a == b;
+    // return a == b;
     return std::strcmp(a.name(), b.name()) == 0; // FIXME
 #endif
   }

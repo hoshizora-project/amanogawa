@@ -2,7 +2,6 @@
 #include "amanogawa/core/confing.h"
 #include "amanogawa/core/row.h"
 #include "amanogawa/include/source.h"
-#include "amanogawa/plugin/source/file/csv.h"
 #include "text-csv/include/text/csv/istream.hpp"
 #include <string>
 #include <vector>
