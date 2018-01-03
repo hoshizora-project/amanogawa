@@ -13,10 +13,15 @@ namespace file {
 using amanogawa::plugin::SourcePlugin;
 
 struct SourceFilePlugin : SourcePlugin {
-  const core::Config config;
+  const std::string plugin_full_name = "source_file";
+  const std::string plugin_name = "file";
+  const core::Config entire_config;
+  const core::Config::config_map config;
   core::ColumnsInfo cols_info;
 
-  explicit SourceFilePlugin(const core::Config &config) : config(config) {
+  explicit SourceFilePlugin(const core::Config &config) :
+      entire_config(config),
+      config(entire_config.source->get_table(plugin_name)) {
     const auto cols =
         config.source->get_table_array_qualified("format.csv.columns");
     size_t idx = 0;
@@ -27,11 +32,12 @@ struct SourceFilePlugin : SourcePlugin {
     }
   }
 
-  std::vector<core::Row> spring(const std::string &file_name) const {
+  std::vector<core::Row> spring() const {
     printf("source is called\n");
 
     std::vector<core::Row> result;
 
+    const auto file_name = *config->get_as<std::string>("path");
     std::ifstream fs(file_name);
     text::csv::csv_istream csvs(fs);
     const auto num_cols = cols_info.size();

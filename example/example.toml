@@ -1,4 +1,6 @@
 [source]
+[source.file]
+path = "raw.csv"
 [source.format.csv]
 [[source.format.csv.columns]]
 name = "id"

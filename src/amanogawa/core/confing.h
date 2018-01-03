@@ -8,10 +8,11 @@ namespace amanogawa {
 namespace core {
 class Config {
 public:
-  const std::shared_ptr<cpptoml::table> root;
-  const std::shared_ptr<cpptoml::table> source;
-  const std::shared_ptr<cpptoml::table> flow;
-  const std::shared_ptr<cpptoml::table> sink;
+  using config_map = std::shared_ptr<cpptoml::table>;
+  const config_map root;
+  const config_map source;
+  const config_map flow;
+  const config_map sink;
 
   static Config load_from_file(const std::string &file_name) {
     const auto config = Config(cpptoml::parse_file(file_name));

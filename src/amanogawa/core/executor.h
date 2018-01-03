@@ -42,7 +42,7 @@ void execute(const std::string &config_file) {
   const auto &flow_plugin = get_flow_plugin(conf);
   const auto &sink_plugin = get_sink_plugin(conf);
 
-  auto data = source_plugin->spring("raw.csv");
+  auto data = source_plugin->spring();
   logger->info("Source-phase finished");
   auto transformed = flow_plugin->flow(data);
   logger->info("Flow-phase finished");

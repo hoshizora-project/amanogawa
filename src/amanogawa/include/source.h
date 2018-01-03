@@ -9,7 +9,7 @@
 namespace amanogawa {
 namespace plugin {
 struct SourcePlugin {
-  virtual std::vector<core::Row> spring(const std::string &file_name) const = 0;
+  virtual std::vector<core::Row> spring() const = 0;
 };
 
 using get_source_plugin_return_t = std::unique_ptr<SourcePlugin>;
