@@ -1,7 +1,7 @@
 #include "amanogawa/core/column_info.h"
 #include "amanogawa/core/confing.h"
 #include "amanogawa/core/row.h"
-#include "amanogawa/include/source.h"
+#include "amanogawa/include/source_plugin.h"
 #include "text-csv/include/text/csv/istream.hpp"
 #include <string>
 #include <vector>
@@ -13,15 +13,17 @@ namespace file {
 using amanogawa::plugin::SourcePlugin;
 
 struct SourceFilePlugin : SourcePlugin {
-  const std::string plugin_full_name = "source_file";
-  const std::string plugin_name = "file";
+  std::string plugin_name() const {
+    return "file";
+  }
+
   const core::Config entire_config;
   const core::Config::config_map config;
   core::ColumnsInfo cols_info;
 
-  explicit SourceFilePlugin(const core::Config &config) :
-      entire_config(config),
-      config(entire_config.source->get_table(plugin_name)) {
+  explicit SourceFilePlugin(const core::Config &config)
+      : entire_config(config),
+        config(entire_config.source->get_table(plugin_name())) {
     const auto cols =
         config.source->get_table_array_qualified("format.csv.columns");
     size_t idx = 0;

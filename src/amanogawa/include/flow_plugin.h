@@ -3,12 +3,17 @@
 
 #include "amanogawa/core/confing.h"
 #include "amanogawa/core/row.h"
+#include "amanogawa/include/plugin.h"
 #include <string>
 #include <vector>
 
 namespace amanogawa {
 namespace plugin {
-struct FlowPlugin {
+struct FlowPlugin : Plugin {
+  std::string plugin_full_name() const {
+    return "flow_" + plugin_name();
+  }
+
   virtual std::vector<core::Row> flow(std::vector<core::Row> &data) const = 0;
 };
 

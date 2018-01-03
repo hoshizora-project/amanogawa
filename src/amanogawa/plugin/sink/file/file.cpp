@@ -1,6 +1,6 @@
 #include "amanogawa/core/column_info.h"
 #include "amanogawa/core/confing.h"
-#include "amanogawa/include/sink.h"
+#include "amanogawa/include/sink_plugin.h"
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -12,6 +12,9 @@ namespace plugin {
 namespace sink {
 namespace file {
 struct SinkFilePlugin : SinkPlugin {
+  std::string plugin_name() const {
+    return "file";
+  }
   const core::Config config;
 
   explicit SinkFilePlugin(const core::Config &config) : config(config) {}
@@ -19,6 +22,7 @@ struct SinkFilePlugin : SinkPlugin {
   void drain(const std::string &file_name,
              const std::vector<core::Row> &data) const {
     printf("sink is called\n");
+    printf("[%s]\n", plugin_full_name().c_str());
 
     std::vector<std::string> col_names = {"id", "name"};
     std::vector<std::string> col_types = {"int", "string"};

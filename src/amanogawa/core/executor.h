@@ -5,9 +5,9 @@
 #include "amanogawa/core/dl.h"
 #include "amanogawa/core/util.h"
 #include "amanogawa/include/common.h"
-#include "amanogawa/include/flow.h"
-#include "amanogawa/include/sink.h"
-#include "amanogawa/include/source.h"
+#include "amanogawa/include/flow_plugin.h"
+#include "amanogawa/include/sink_plugin.h"
+#include "amanogawa/include/source_plugin.h"
 #include "arrow/api.h"
 #include <dlfcn.h>
 #include <iostream>

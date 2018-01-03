@@ -1,5 +1,5 @@
 #include "amanogawa/core/confing.h"
-#include "amanogawa/include/flow.h"
+#include "amanogawa/include/flow_plugin.h"
 #include <string>
 #include <vector>
 
@@ -8,6 +8,9 @@ namespace plugin {
 namespace flow {
 namespace example_add {
 struct FlowExampleAddPlugin : FlowPlugin {
+  std::string plugin_name() const {
+    return "example_add";
+  }
   const core::Config config;
 
   explicit FlowExampleAddPlugin(const core::Config &config) : config(config) {}

@@ -3,12 +3,17 @@
 
 #include "amanogawa/core/confing.h"
 #include "amanogawa/core/row.h"
+#include "amanogawa/include/plugin.h"
 #include <string>
 #include <vector>
 
 namespace amanogawa {
 namespace plugin {
-struct SourcePlugin {
+struct SourcePlugin : Plugin {
+  std::string plugin_full_name() const {
+      return "source_" + plugin_name();
+  }
+
   virtual std::vector<core::Row> spring() const = 0;
 };
 
