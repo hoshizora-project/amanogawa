@@ -1,6 +1,7 @@
 #ifndef AMANOGAWA_PLUGIN_H
 #define AMANOGAWA_PLUGIN_H
 
+#include "util.h"
 #include <string>
 
 namespace amanogawa {

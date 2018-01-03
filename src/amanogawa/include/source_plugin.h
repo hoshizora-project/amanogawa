@@ -10,8 +10,8 @@
 namespace amanogawa {
 namespace plugin {
 struct SourcePlugin : Plugin {
-  std::string plugin_full_name() const {
-      return "source_" + plugin_name();
+  std::string plugin_full_name() const override {
+    return "source_" + plugin_name();
   }
 
   virtual std::vector<core::Row> spring() const = 0;

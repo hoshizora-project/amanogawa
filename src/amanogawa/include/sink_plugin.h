@@ -10,7 +10,7 @@
 namespace amanogawa {
 namespace plugin {
 struct SinkPlugin : Plugin {
-  std::string plugin_full_name() const {
+  std::string plugin_full_name() const override {
     return "sink_" + plugin_name();
   }
 

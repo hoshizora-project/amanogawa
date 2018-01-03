@@ -12,17 +12,16 @@ namespace plugin {
 namespace sink {
 namespace file {
 struct SinkFilePlugin : SinkPlugin {
-  std::string plugin_name() const {
-    return "file";
-  }
+  const logger_t logger = get_logger(plugin_full_name());
+
+  std::string plugin_name() const override { return "file"; }
   const core::Config config;
 
   explicit SinkFilePlugin(const core::Config &config) : config(config) {}
 
   void drain(const std::string &file_name,
-             const std::vector<core::Row> &data) const {
-    printf("sink is called\n");
-    printf("[%s]\n", plugin_full_name().c_str());
+             const std::vector<core::Row> &data) const override {
+    logger->info("drain");
 
     std::vector<std::string> col_names = {"id", "name"};
     std::vector<std::string> col_types = {"int", "string"};

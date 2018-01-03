@@ -10,7 +10,7 @@
 namespace amanogawa {
 namespace plugin {
 struct FlowPlugin : Plugin {
-  std::string plugin_full_name() const {
+  std::string plugin_full_name() const override {
     return "flow_" + plugin_name();
   }
 

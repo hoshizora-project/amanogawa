@@ -1,7 +1,7 @@
 #ifndef AMANOGAWA_CONF_H
 #define AMANOGAWA_CONF_H
 
-#include "amanogawa/core/util.h"
+#include "amanogawa/include/util.h"
 #include "cpptoml/include/cpptoml.h"
 
 namespace amanogawa {

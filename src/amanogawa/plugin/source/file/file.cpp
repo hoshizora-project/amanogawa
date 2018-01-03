@@ -13,9 +13,9 @@ namespace file {
 using amanogawa::plugin::SourcePlugin;
 
 struct SourceFilePlugin : SourcePlugin {
-  std::string plugin_name() const {
-    return "file";
-  }
+  const logger_t logger = get_logger(plugin_full_name());
+
+  std::string plugin_name() const override { return "file"; }
 
   const core::Config entire_config;
   const core::Config::config_map config;
@@ -34,8 +34,8 @@ struct SourceFilePlugin : SourcePlugin {
     }
   }
 
-  std::vector<core::Row> spring() const {
-    printf("source is called\n");
+  std::vector<core::Row> spring() const override {
+    logger->info("spring");
 
     std::vector<core::Row> result;
 

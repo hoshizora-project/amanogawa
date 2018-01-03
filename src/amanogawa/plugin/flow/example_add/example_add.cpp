@@ -8,15 +8,16 @@ namespace plugin {
 namespace flow {
 namespace example_add {
 struct FlowExampleAddPlugin : FlowPlugin {
-  std::string plugin_name() const {
-    return "example_add";
-  }
+  const logger_t logger = get_logger(plugin_full_name());
+
+  std::string plugin_name() const override { return "example_add"; }
   const core::Config config;
 
   explicit FlowExampleAddPlugin(const core::Config &config) : config(config) {}
 
-  std::vector<core::Row> flow(std::vector<core::Row> &data) const {
-    printf("flow is called\n");
+  std::vector<core::Row> flow(std::vector<core::Row> &data) const override {
+    logger->info("flow");
+
     // for (auto &row : data) {
     // row += "!";
     //}
