@@ -1,8 +1,8 @@
-#include "amanogawa/core/column_info.h"
 #include "amanogawa/core/confing.h"
-#include "amanogawa/core/row.h"
 #include "amanogawa/include/source_plugin.h"
 #include "text-csv/include/text/csv/istream.hpp"
+#include <arrow/api.h>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -10,7 +10,45 @@ namespace amanogawa {
 namespace plugin {
 namespace source {
 namespace file {
-using amanogawa::plugin::SourcePlugin;
+
+static std::unordered_map<std::string, std::string> normalize_table = {
+    {"int32", "int32"},
+    {"int", "int32"},
+    {"double", "double"},
+    {"utf8", "utf8"},
+    {"string", "utf8"}};
+
+static std::unordered_map<std::string,
+                          std::function<std::shared_ptr<arrow::DataType>(void)>>
+    arrow_data_type_table = {
+        {"int32", []() { return std::make_shared<arrow::Int32Type>(); }},
+        {"double", []() { return std::make_shared<arrow::DoubleType>(); }},
+        {"utf8", []() { return std::make_shared<arrow::StringType>(); }}};
+
+auto get_arrow_data_type(const std::string &type) {
+  return arrow_data_type_table.at(normalize_table.at(type))();
+}
+
+static std::unordered_map<
+    std::string,
+    std::function<std::shared_ptr<arrow::ArrayBuilder>(arrow::MemoryPool *)>>
+    arrow_builder_table = {
+        {"int32",
+         [](arrow::MemoryPool *pool) {
+           return std::make_shared<arrow::Int32Builder>(pool);
+         }},
+        {"double",
+         [](arrow::MemoryPool *pool) {
+           return std::make_shared<arrow::DoubleBuilder>(pool);
+         }},
+        {"utf8", [](arrow::MemoryPool *pool) {
+           return std::make_shared<arrow::StringBuilder>(pool);
+         }}};
+
+auto get_arrow_builder(const std::string &type,
+                       arrow::MemoryPool *pool = arrow::default_memory_pool()) {
+  return arrow_builder_table.at(normalize_table.at(type))(pool);
+}
 
 struct SourceFilePlugin : SourcePlugin {
   const logger_t logger = get_logger(plugin_full_name());
@@ -19,55 +57,76 @@ struct SourceFilePlugin : SourcePlugin {
 
   const core::Config entire_config;
   const core::Config::config_map config;
-  core::ColumnsInfo cols_info;
+  std::shared_ptr<arrow::Schema> schema;
 
+  // TODO: Validate config
   explicit SourceFilePlugin(const core::Config &config)
       : entire_config(config),
         config(entire_config.source->get_table(plugin_name())) {
     const auto cols =
         config.source->get_table_array_qualified("format.csv.columns");
-    size_t idx = 0;
+
+    std::vector<std::shared_ptr<arrow::Field>> fields;
     for (const auto &col : *cols) {
-      cols_info.emplace_back(core::ColumnInfo(
+      fields.emplace_back(std::make_shared<arrow::Field>(
           *(col->get_as<std::string>("name")),
-          core::type_map.at(*(col->get_as<std::string>("type"))), idx++));
+          get_arrow_data_type(*col->get_as<std::string>("type"))));
     }
+    schema = arrow::schema(std::move(fields));
   }
 
-  std::vector<core::Row> spring() const override {
+  // TODO: Want to use https://issues.apache.org/jira/browse/ARROW-25
+  std::shared_ptr<arrow::Table> spring() const override {
     logger->info("spring");
-
-    std::vector<core::Row> result;
 
     const auto file_name = *config->get_as<std::string>("path");
     std::ifstream fs(file_name);
     text::csv::csv_istream csvs(fs);
-    const auto num_cols = cols_info.size();
 
-    while (csvs) {
-      core::Row row;
-      row.reserve(num_cols);
-      for (const auto &col_info : cols_info) {
-        const auto type = col_info.type;
-        if (type == typeid(int)) {
-          int i;
-          csvs >> i;
-          row.emplace_back(i);
-        } else if (type == typeid(double)) {
-          double d;
-          csvs >> d;
-          row.emplace_back(d);
-        } else if (type == typeid(std::string)) {
-          std::string s;
-          csvs >> s;
-          row.emplace_back(s);
-        } else {
-        }
-      }
-      result.emplace_back(row);
+    const auto num_fields = static_cast<size_t>(schema->num_fields());
+
+    std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
+    builders.reserve(num_fields);
+    for (const auto &field : schema->fields()) {
+      builders.emplace_back(get_arrow_builder(field->type()->name()));
     }
 
-    return result;
+    // FIXME: Manage invalid row
+    while (csvs) {
+      for (size_t i = 0; i < num_fields; ++i) {
+        const auto type = schema->field(static_cast<int>(i))->type()->name();
+        // FIXME: Use visitor or pre-planing (concat field info for each row)
+        if (type == "int32") {
+          int val;
+          csvs >> val;
+          std::dynamic_pointer_cast<arrow::Int32Builder>(builders.at(i))
+              ->Append(val);
+        } else if (type == "double") {
+          double val;
+          csvs >> val;
+          std::dynamic_pointer_cast<arrow::DoubleBuilder>(builders.at(i))
+              ->Append(val);
+        } else if (type == "utf8") {
+          std::string val;
+          csvs >> val;
+          std::dynamic_pointer_cast<arrow::StringBuilder>(builders.at(i))
+              ->Append(val);
+        } else {
+          logger->warn("Detected unsupported type: {}", type);
+        }
+      }
+    }
+
+    std::vector<std::shared_ptr<arrow::Column>> columns;
+    columns.reserve(num_fields);
+    for (size_t i = 0; i < num_fields; ++i) {
+      std::shared_ptr<arrow::Array> array;
+      builders.at(i)->Finish(&array);
+      columns.emplace_back(std::make_shared<arrow::Column>(
+          schema->field(static_cast<int>(i)), array));
+    }
+
+    return arrow::Table::Make(schema, columns);
   }
 };
 

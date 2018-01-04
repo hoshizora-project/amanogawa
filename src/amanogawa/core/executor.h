@@ -44,7 +44,8 @@ void execute(const std::string &config_file) {
 
   auto data = source_plugin->spring();
   logger->info("Source-phase finished");
-  auto transformed = flow_plugin->flow(data);
+  std::vector<core::Row> dummy;
+  auto transformed = flow_plugin->flow(/*data*/ dummy);
   logger->info("Flow-phase finished");
   sink_plugin->drain("result", transformed);
   logger->info("Sink-phase finished");

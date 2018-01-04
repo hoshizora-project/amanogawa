@@ -48,7 +48,7 @@ public:
 
 private:
   void *const handle;
-  explicit DL(void *handler) : handle(handler) {}
+  explicit DL(void *handle) : handle(handle) {}
 };
 } // namespace core
 } // namespace amanogawa

@@ -4,6 +4,7 @@
 #include "amanogawa/core/confing.h"
 #include "amanogawa/core/row.h"
 #include "amanogawa/include/plugin.h"
+#include <arrow/api.h>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,7 @@ struct SourcePlugin : Plugin {
     return "source_" + plugin_name();
   }
 
-  virtual std::vector<core::Row> spring() const = 0;
+  virtual std::shared_ptr<arrow::Table> spring() const = 0;
 };
 
 using get_source_plugin_return_t = std::unique_ptr<SourcePlugin>;
