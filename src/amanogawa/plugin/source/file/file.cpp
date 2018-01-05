@@ -14,16 +14,17 @@ namespace file {
 static std::unordered_map<std::string, std::string> normalize_table = {
     {"int32", "int32"},
     {"int", "int32"},
-    {"double", "double"},
+    {"float64", "float64"},
+    {"double", "float64"},
     {"utf8", "utf8"},
     {"string", "utf8"}};
 
 static std::unordered_map<std::string,
                           std::function<std::shared_ptr<arrow::DataType>(void)>>
     arrow_data_type_table = {
-        {"int32", []() { return std::make_shared<arrow::Int32Type>(); }},
-        {"double", []() { return std::make_shared<arrow::DoubleType>(); }},
-        {"utf8", []() { return std::make_shared<arrow::StringType>(); }}};
+        {"int32", []() { return arrow::int32(); }},
+        {"float64", []() { return arrow::float64(); }},
+        {"utf8", []() { return arrow::utf8(); }}};
 
 auto get_arrow_data_type(const std::string &type) {
   return arrow_data_type_table.at(normalize_table.at(type))();
@@ -37,7 +38,7 @@ static std::unordered_map<
          [](arrow::MemoryPool *pool) {
            return std::make_shared<arrow::Int32Builder>(pool);
          }},
-        {"double",
+        {"float64",
          [](arrow::MemoryPool *pool) {
            return std::make_shared<arrow::DoubleBuilder>(pool);
          }},
@@ -101,7 +102,7 @@ struct SourceFilePlugin : SourcePlugin {
           csvs >> val;
           std::dynamic_pointer_cast<arrow::Int32Builder>(builders.at(i))
               ->Append(val);
-        } else if (type == "double") {
+        } else if (type == "float64") {
           double val;
           csvs >> val;
           std::dynamic_pointer_cast<arrow::DoubleBuilder>(builders.at(i))
