@@ -15,7 +15,7 @@ struct FlowExampleAddPlugin : FlowPlugin {
 
   explicit FlowExampleAddPlugin(const core::Config &config) : config(config) {}
 
-  std::vector<core::Row> flow(std::vector<core::Row> &data) const override {
+  std::shared_ptr<arrow::Table> flow(const std::shared_ptr<arrow::Table> &data) const override {
     logger->info("flow");
 
     // for (auto &row : data) {
