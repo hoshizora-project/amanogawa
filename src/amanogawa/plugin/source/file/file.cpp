@@ -12,19 +12,14 @@ namespace source {
 namespace file {
 
 static std::unordered_map<std::string, std::string> normalize_table = {
-    {"int32", "int32"},
-    {"int", "int32"},
-    {"float64", "float64"},
-    {"double", "float64"},
-    {"utf8", "utf8"},
-    {"string", "utf8"}};
+    {"int32", "int32"},    {"int", "int32"}, {"float64", "float64"},
+    {"double", "float64"}, {"utf8", "utf8"}, {"string", "utf8"}};
 
 static std::unordered_map<std::string,
                           std::function<std::shared_ptr<arrow::DataType>(void)>>
-    arrow_data_type_table = {
-        {"int32", []() { return arrow::int32(); }},
-        {"float64", []() { return arrow::float64(); }},
-        {"utf8", []() { return arrow::utf8(); }}};
+    arrow_data_type_table = {{"int32", []() { return arrow::int32(); }},
+                             {"float64", []() { return arrow::float64(); }},
+                             {"utf8", []() { return arrow::utf8(); }}};
 
 auto get_arrow_data_type(const std::string &type) {
   return arrow_data_type_table.at(normalize_table.at(type))();
@@ -52,20 +47,18 @@ auto get_arrow_builder(const std::string &type,
 }
 
 struct SourceFilePlugin : SourcePlugin {
-  const logger_t logger = get_logger(plugin_full_name());
-
   std::string plugin_name() const override { return "file"; }
+  const logger_t logger = get_logger(plugin_full_name());
+  const core::Config::config_map plugin_config;
 
-  const core::Config entire_config;
-  const core::Config::config_map config;
   std::shared_ptr<arrow::Schema> schema;
 
   // TODO: Validate config
   explicit SourceFilePlugin(const core::Config &config)
-      : entire_config(config),
-        config(entire_config.source->get_table(plugin_name())) {
+      : SourcePlugin(config),
+        plugin_config(source_config->get_table(plugin_name())) {
     const auto cols =
-        config.source->get_table_array_qualified("format.csv.columns");
+        source_config->get_table_array_qualified("format.csv.columns");
 
     std::vector<std::shared_ptr<arrow::Field>> fields;
     for (const auto &col : *cols) {
@@ -80,7 +73,7 @@ struct SourceFilePlugin : SourcePlugin {
   std::shared_ptr<arrow::Table> spring() const override {
     logger->info("spring");
 
-    const auto file_name = *config->get_as<std::string>("path");
+    const auto file_name = *plugin_config->get_as<std::string>("path");
     std::ifstream fs(file_name);
     text::csv::csv_istream csvs(fs);
 

@@ -1,5 +1,7 @@
 #include "amanogawa/core/confing.h"
 #include "amanogawa/include/flow_plugin.h"
+#include <arrow/api.h>
+#include <arrow/compute/api.h>
 #include <string>
 #include <vector>
 
@@ -8,19 +10,27 @@ namespace plugin {
 namespace flow {
 namespace example_add {
 struct FlowExampleAddPlugin : FlowPlugin {
-  const logger_t logger = get_logger(plugin_full_name());
-
   std::string plugin_name() const override { return "example_add"; }
-  const core::Config config;
+  const logger_t logger = get_logger(plugin_full_name());
+  const core::Config::config_map plugin_config;
 
-  explicit FlowExampleAddPlugin(const core::Config &config) : config(config) {}
+  explicit FlowExampleAddPlugin(const core::Config &config)
+      : FlowPlugin(config),
+        plugin_config(flow_config->get_table(plugin_name())) {}
 
-  std::shared_ptr<arrow::Table> flow(const std::shared_ptr<arrow::Table> &data) const override {
+  std::shared_ptr<arrow::Table>
+  flow(const std::shared_ptr<arrow::Table> &data) const override {
     logger->info("flow");
 
-    // for (auto &row : data) {
-    // row += "!";
-    //}
+    auto id_col = data->column(data->schema()->GetFieldIndex("id"));
+    for (const auto &id_chunk : id_col->data()->chunks()) {
+      const auto chunk = std::dynamic_pointer_cast<arrow::Int32Array>(id_chunk);
+      const auto length = id_chunk->length();
+      for (size_t i = 0; i < length; ++i) {
+        logger->info("array[{}]: {}", i, chunk->Value(i));
+      }
+    }
+
     return data;
   }
 };

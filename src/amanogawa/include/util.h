@@ -5,6 +5,7 @@
 
 namespace amanogawa {
 using logger_t = std::shared_ptr<spdlog::logger>;
+// TODO: Thread-safe
 static logger_t get_logger(const std::string &id) {
   const auto fqid = "amanogawa@" + id;
   auto logger = spdlog::get(fqid);

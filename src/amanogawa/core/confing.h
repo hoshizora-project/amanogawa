@@ -18,7 +18,7 @@ public:
     const auto config = Config(cpptoml::parse_file(file_name));
     const auto valid = validate_minimal_requirements(config);
     if (!valid) {
-      logger->error("invalid config");
+      logger->error("invalid entire_config");
     }
     return config;
   }

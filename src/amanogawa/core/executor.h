@@ -46,8 +46,7 @@ void execute(const std::string &config_file) {
   logger->info("Source-phase finished");
   auto transformed = flow_plugin->flow(data);
   logger->info("Flow-phase finished");
-  std::vector<core::Row> dummy;
-  sink_plugin->drain("result", /*transformed*/ dummy);
+  sink_plugin->drain(transformed);
   logger->info("Sink-phase finished");
 }
 
