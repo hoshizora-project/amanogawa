@@ -22,14 +22,21 @@ struct FlowExampleAddPlugin : FlowPlugin {
   flow(const std::shared_ptr<arrow::Table> &data) const override {
     logger->info("flow");
 
-    auto id_col = data->column(data->schema()->GetFieldIndex("id"));
-    for (const auto &id_chunk : id_col->data()->chunks()) {
-      const auto chunk = std::dynamic_pointer_cast<arrow::Int32Array>(id_chunk);
-      const auto length = id_chunk->length();
-      for (size_t i = 0; i < length; ++i) {
-        logger->info("array[{}]: {}", i, chunk->Value(i));
-      }
-    }
+    // const auto rename_rules = *flow_config->get_table_array("rename");
+    // for(const auto &rename_rule:rename_rules){
+    //  const auto from = rename_rule->get_as<std::string>("from");
+    //  const auto to = rename_rule->get_as<std::string>("to");
+    //  schema
+    //}
+
+    // auto id_col = data->column(data->schema()->GetFieldIndex("id"));
+    // for (const auto &id_chunk : id_col->data()->chunks()) {
+    //  const auto chunk =
+    //  std::dynamic_pointer_cast<arrow::Int32Array>(id_chunk); const auto
+    //  length = id_chunk->length(); for (size_t i = 0; i < length; ++i) {
+    //    logger->info("array[{}]: {}", i, chunk->Value(i));
+    //  }
+    //}
 
     return data;
   }

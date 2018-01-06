@@ -21,7 +21,7 @@ target_link_libraries(sink_file ${LIB_ARROW})
 set(SOURCE_FILES src/amanogawa/main.cpp src/amanogawa/core/executor.h src/amanogawa/core/confing.h src/amanogawa/core/column_info.h src/amanogawa/include/common.h src/amanogawa/include/flow_plugin.h src/amanogawa/include/sink_plugin.h src/amanogawa/include/source_plugin.h src/amanogawa/core/any.h src/amanogawa/core/row.h src/amanogawa/core/dl.h src/amanogawa/include/util.h src/amanogawa/include/plugin.h)
 add_subdirectory(src/pybind11)
 #add_subdirectory(src/arrow/cpp) # need manual build...
-INCLUDE_DIRECTORIES(src src/arrow/cpp/src src/cpptoml/include src/spdlog/include)
+INCLUDE_DIRECTORIES(src src/arrow/cpp/src src/cpptoml/include src/spdlog/include src/text-csv/include)
 
 if (UNIX AND NOT APPLE)
     # linux

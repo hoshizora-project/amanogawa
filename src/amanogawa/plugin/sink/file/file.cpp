@@ -1,11 +1,12 @@
 #include "amanogawa/core/column_info.h"
 #include "amanogawa/core/confing.h"
 #include "amanogawa/include/sink_plugin.h"
+#include "amanogawa/include/util.h"
 #include <arrow/api.h>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <typeinfo>
+#include <text/csv/ostream.hpp>
 #include <vector>
 
 namespace amanogawa {
@@ -17,30 +18,81 @@ struct SinkFilePlugin : SinkPlugin {
   const logger_t logger = get_logger(plugin_full_name());
   const core::Config::config_map plugin_config;
 
+  std::shared_ptr<arrow::Schema> schema;
+
   explicit SinkFilePlugin(const core::Config &config)
       : SinkPlugin(config),
-        plugin_config(sink_config->get_table(plugin_name())) {}
+        plugin_config(sink_config->get_table(plugin_name())) {
+    const auto cols =
+        sink_config->get_table_array_qualified("format.csv.columns");
+
+    std::vector<std::shared_ptr<arrow::Field>> fields;
+    for (const auto &col : *cols) {
+      fields.emplace_back(std::make_shared<arrow::Field>(
+          *(col->get_as<std::string>("name")),
+          get_arrow_data_type(*col->get_as<std::string>("type"))));
+    }
+    schema = arrow::schema(std::move(fields));
+  }
 
   // TODO: Report exit status
   void drain(const std::shared_ptr<arrow::Table> &data) const override {
     logger->info("drain");
 
-    // std::vector<std::string> col_names = {"id", "name"};
-    // std::vector<std::string> col_types = {"int", "string"};
-    // core::ColumnsInfo cols_info;
-    // for (size_t col_idx = 0; col_idx < 2; ++col_idx) {
-    //  cols_info.emplace_back(core::ColumnInfo(
-    //      col_names[col_idx], core::type_map.at(col_types[col_idx]),
-    //      col_idx));
-    //}
+    const auto file_name = *plugin_config->get_as<std::string>("path");
+    std::ofstream fs(file_name);
+    text::csv::csv_ostream csv_os(fs);
 
-    // std::ofstream output(file_name);
-    // for (const auto &row : data) {
-    //  for (size_t i = 0, end = cols_info.size(); i < end; ++i) {
-    //    core::visit(row, cols_info, i, [&](auto el) { output << el; });
-    //  }
-    //}
-    // output.close();
+    const auto write_header = plugin_config->get_as<bool>("write_header");
+    if (write_header.value_or(true)) {
+      for (const auto &field : schema->fields()) {
+        auto field_name = field->name();
+
+        // TMP: Rename
+        if (field_name == "id") {
+          field_name = "ID";
+        }
+
+        csv_os << field_name;
+      }
+      csv_os << text::csv::endl;
+    }
+
+    for (size_t i = 0, end = data->num_rows(); i < end; ++i) {
+      for (const auto &field : schema->fields()) {
+        auto field_name = field->name();
+
+        // TMP: Rename
+        if (field_name == "ID") {
+          field_name = "id";
+        }
+
+        const auto field_idx = data->schema()->GetFieldIndex(field_name);
+        const auto col = data->column(static_cast<int>(field_idx));
+
+        // TMP: Assume that all arrays consist of a single chunk
+        const auto chunk = col->data()->chunk(0);
+        const auto type = col->type()->name();
+
+        if (type == "int32") {
+          const auto int32_chunk =
+              std::dynamic_pointer_cast<arrow::Int32Array>(chunk);
+          csv_os << int32_chunk->Value(i);
+        } else if (type == "float64") {
+          const auto float64_chunk =
+              std::dynamic_pointer_cast<arrow::DoubleArray>(chunk);
+          csv_os << float64_chunk->Value(i);
+        } else if (type == "utf8") {
+          const auto utf8_chunk =
+              std::dynamic_pointer_cast<arrow::StringArray>(chunk);
+          csv_os << utf8_chunk->GetString(i);
+        } else {
+          logger->warn("Invalid");
+        }
+      }
+      csv_os << text::csv::endl;
+    }
+    fs.close();
   }
 };
 

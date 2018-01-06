@@ -1,50 +1,13 @@
 #include "amanogawa/core/confing.h"
 #include "amanogawa/include/source_plugin.h"
-#include "text-csv/include/text/csv/istream.hpp"
+#include "amanogawa/include/util.h"
 #include <arrow/api.h>
-#include <functional>
-#include <string>
-#include <vector>
+#include <text/csv/istream.hpp>
 
 namespace amanogawa {
 namespace plugin {
 namespace source {
 namespace file {
-
-static std::unordered_map<std::string, std::string> normalize_table = {
-    {"int32", "int32"},    {"int", "int32"}, {"float64", "float64"},
-    {"double", "float64"}, {"utf8", "utf8"}, {"string", "utf8"}};
-
-static std::unordered_map<std::string,
-                          std::function<std::shared_ptr<arrow::DataType>(void)>>
-    arrow_data_type_table = {{"int32", []() { return arrow::int32(); }},
-                             {"float64", []() { return arrow::float64(); }},
-                             {"utf8", []() { return arrow::utf8(); }}};
-
-auto get_arrow_data_type(const std::string &type) {
-  return arrow_data_type_table.at(normalize_table.at(type))();
-}
-
-static std::unordered_map<
-    std::string,
-    std::function<std::shared_ptr<arrow::ArrayBuilder>(arrow::MemoryPool *)>>
-    arrow_builder_table = {
-        {"int32",
-         [](arrow::MemoryPool *pool) {
-           return std::make_shared<arrow::Int32Builder>(pool);
-         }},
-        {"float64",
-         [](arrow::MemoryPool *pool) {
-           return std::make_shared<arrow::DoubleBuilder>(pool);
-         }},
-        {"utf8", [](arrow::MemoryPool *pool) {
-           return std::make_shared<arrow::StringBuilder>(pool);
-         }}};
-
-auto get_arrow_builder(const std::string &type,
-                       arrow::MemoryPool *pool = arrow::default_memory_pool()) {
-  return arrow_builder_table.at(normalize_table.at(type))(pool);
-}
 
 struct SourceFilePlugin : SourcePlugin {
   std::string plugin_name() const override { return "file"; }
@@ -75,7 +38,7 @@ struct SourceFilePlugin : SourcePlugin {
 
     const auto file_name = *plugin_config->get_as<std::string>("path");
     std::ifstream fs(file_name);
-    text::csv::csv_istream csvs(fs);
+    text::csv::csv_istream csv_is(fs);
 
     const auto num_fields = static_cast<size_t>(schema->num_fields());
 
@@ -86,23 +49,23 @@ struct SourceFilePlugin : SourcePlugin {
     }
 
     // FIXME: Manage invalid row
-    while (csvs) {
+    while (csv_is) {
       for (size_t i = 0; i < num_fields; ++i) {
         const auto type = schema->field(static_cast<int>(i))->type()->name();
         // FIXME: Use visitor or pre-planing (concat field info for each row)
         if (type == "int32") {
           int val;
-          csvs >> val;
+          csv_is >> val;
           std::dynamic_pointer_cast<arrow::Int32Builder>(builders.at(i))
               ->Append(val);
         } else if (type == "float64") {
           double val;
-          csvs >> val;
+          csv_is >> val;
           std::dynamic_pointer_cast<arrow::DoubleBuilder>(builders.at(i))
               ->Append(val);
         } else if (type == "utf8") {
           std::string val;
-          csvs >> val;
+          csv_is >> val;
           std::dynamic_pointer_cast<arrow::StringBuilder>(builders.at(i))
               ->Append(val);
         } else {
