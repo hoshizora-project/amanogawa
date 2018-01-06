@@ -1,4 +1,3 @@
-#include "amanogawa/core/column_info.h"
 #include "amanogawa/core/confing.h"
 #include "amanogawa/include/sink_plugin.h"
 #include "amanogawa/include/util.h"

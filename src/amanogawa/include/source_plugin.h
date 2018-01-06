@@ -2,7 +2,6 @@
 #define AMANOGAWA_SOURCE_H
 
 #include "amanogawa/core/confing.h"
-#include "amanogawa/core/row.h"
 #include "amanogawa/include/plugin.h"
 #include <arrow/api.h>
 #include <string>

@@ -19,9 +19,8 @@
 
 namespace amanogawa {
 namespace core {
-void execute(const std::string &config_file) {
+void execute(const core::Config &config) {
   const auto logger = get_logger("executor");
-  auto conf = Config::load_from_file(config_file);
 
   const auto lib_source = DL::open("source_file");
   // const auto lib_format = DL::open("format_csv");
@@ -37,10 +36,10 @@ void execute(const std::string &config_file) {
   const auto get_sink_plugin =
       lib_sink->sym<plugin::get_sink_plugin_t>(func_name::get_sink_plugin);
 
-  const auto &source_plugin = get_source_plugin(conf);
-  // const auto &format_plugin = get_format_plugin(conf);
-  const auto &flow_plugin = get_flow_plugin(conf);
-  const auto &sink_plugin = get_sink_plugin(conf);
+  const auto &source_plugin = get_source_plugin(config);
+  // const auto &format_plugin = get_format_plugin(config);
+  const auto &flow_plugin = get_flow_plugin(config);
+  const auto &sink_plugin = get_sink_plugin(config);
 
   auto data = source_plugin->spring();
   logger->info("Source-phase finished");
