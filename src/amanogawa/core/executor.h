@@ -1,5 +1,5 @@
-#ifndef AMANOGAWA_EXECUTOR_CPP
-#define AMANOGAWA_EXECUTOR_CPP
+#ifndef AMANOGAWA_EXECUTOR_H
+#define AMANOGAWA_EXECUTOR_H
 
 #include "amanogawa/core/confing.h"
 #include "amanogawa/core/dl.h"
@@ -13,9 +13,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#ifdef PYTHON
-#include <pybind11/pybind11.h>
-#endif
 
 namespace amanogawa {
 namespace core {
@@ -48,13 +45,6 @@ void execute(const core::Config &config) {
   sink_plugin->drain(transformed);
   logger->info("Sink-phase finished");
 }
-
-#ifdef PYTHON
-PYBIND11_MODULE(amanogawa, m) {
-  m.doc() = "pybind11 exampleuuuuu";
-  m.def("execute", &execute, "executeeeeeee");
-}
-#endif
 } // namespace core
 } // namespace amanogawa
 

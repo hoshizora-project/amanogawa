@@ -1,5 +1,8 @@
-#include "amanogawa/core/executor.h"
 #include "amanogawa/core/confing.h"
+#include "amanogawa/core/executor.h"
+#ifdef PYTHON
+#include <pybind11/pybind11.h>
+#endif
 
 namespace amanogawa {
 void main(int argc, char *argv[]) {
@@ -10,3 +13,15 @@ void main(int argc, char *argv[]) {
 } // namespace amanogawa
 
 int main(int argc, char *argv[]) { amanogawa::main(argc, argv); }
+
+namespace amanogawa {
+#ifdef PYTHON
+PYBIND11_MODULE(amanogawa, m) {
+  m.doc() = "amanogawa";
+  pybind11::class_<core::Config> config(m, "Config");
+  config.def("load_from_file", &core::Config::load_from_file,
+             "load config from file");
+  m.def("execute", &core::execute, "execute");
+}
+#endif
+} // namespace amanogawa
