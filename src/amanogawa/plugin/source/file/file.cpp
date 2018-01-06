@@ -38,7 +38,9 @@ struct SourceFilePlugin : SourcePlugin {
 
     const auto file_name = *plugin_config->get_as<std::string>("path");
     std::ifstream fs(file_name);
-    text::csv::csv_istream csv_is(fs);
+    const auto delimiter =
+        *source_config->get_qualified_as<std::string>("format.csv.delimiter");
+    text::csv::csv_istream csv_is(fs, delimiter[0]);
 
     const auto num_fields = static_cast<size_t>(schema->num_fields());
 

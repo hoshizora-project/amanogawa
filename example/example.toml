@@ -2,6 +2,7 @@
 [source.file]
 path = "original.csv"
 [source.format.csv]
+delimiter = ","
 [[source.format.csv.columns]]
 name = "id"
 type = "int"
@@ -24,7 +25,7 @@ to = "ID"
 [sink.file]
 path = "result.csv"
 [sink.format.csv]
-delimiter = ","
+delimiter = "\t"
 [[sink.format.csv.columns]]
 name = "ID"
 type = "int"
