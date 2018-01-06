@@ -11,7 +11,7 @@ namespace file {
 
 struct SourceFilePlugin : SourcePlugin {
   std::string plugin_name() const override { return "file"; }
-  const logger_t logger = get_logger(plugin_full_name());
+  const logger_t logger = get_logger(SourcePlugin::plugin_full_name());
   const core::Config::config_map plugin_config;
 
   std::shared_ptr<arrow::Schema> schema;

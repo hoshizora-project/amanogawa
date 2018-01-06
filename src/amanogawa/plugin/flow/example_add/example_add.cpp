@@ -11,7 +11,7 @@ namespace flow {
 namespace example_add {
 struct FlowExampleAddPlugin : FlowPlugin {
   std::string plugin_name() const override { return "example_add"; }
-  const logger_t logger = get_logger(plugin_full_name());
+  const logger_t logger = get_logger(FlowPlugin::plugin_full_name());
   const core::Config::config_map plugin_config;
 
   explicit FlowExampleAddPlugin(const core::Config &config)
