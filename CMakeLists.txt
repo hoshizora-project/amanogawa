@@ -8,6 +8,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wno-return-type-c-linkage -O0 -DSPDLOG_DEBUG_ON")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
+if (UNIX AND NOT APPLE)
+    # linux
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    set(LIBS_EXT a)
+else ()
+    # macos
+    set(LIBS_EXT dylib)
+endif ()
+
 # external library
 find_library(LIB_ARROW NAMES libarrow.${LIBS_EXT} PATHS src/arrow/cpp/debug/debug)
 
@@ -22,15 +31,6 @@ set(SOURCE_FILES src/amanogawa/main.cpp src/amanogawa/core/executor.h src/amanog
 add_subdirectory(src/pybind11)
 #add_subdirectory(src/arrow/cpp) # need manual build...
 INCLUDE_DIRECTORIES(src src/arrow/cpp/src src/cpptoml/include src/spdlog/include src/text-csv/include)
-
-if (UNIX AND NOT APPLE)
-    # linux
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-    set(LIBS_EXT a)
-else ()
-    # macos
-    set(LIBS_EXT dylib)
-endif ()
 
 add_executable(amanogawa-cli ${SOURCE_FILES})
 target_link_libraries(amanogawa-cli dl ${LIB_ARROW})
