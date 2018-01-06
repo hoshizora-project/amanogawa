@@ -14,7 +14,9 @@ find_library(LIB_ARROW NAMES libarrow.${LIBS_EXT} PATHS src/arrow/cpp/debug/debu
 add_library(source_file SHARED src/amanogawa/plugin/source/file/file.cpp)
 target_link_libraries(source_file ${LIB_ARROW})
 add_library(flow_example_add SHARED src/amanogawa/plugin/flow/example_add/example_add.cpp)
+target_link_libraries(flow_example_add ${LIB_ARROW})
 add_library(sink_file SHARED src/amanogawa/plugin/sink/file/file.cpp)
+target_link_libraries(sink_file ${LIB_ARROW})
 
 set(SOURCE_FILES src/amanogawa/main.cpp src/amanogawa/core/executor.h src/amanogawa/core/confing.h src/amanogawa/core/column_info.h src/amanogawa/include/common.h src/amanogawa/include/flow_plugin.h src/amanogawa/include/sink_plugin.h src/amanogawa/include/source_plugin.h src/amanogawa/core/any.h src/amanogawa/core/row.h src/amanogawa/core/dl.h src/amanogawa/include/util.h src/amanogawa/include/plugin.h)
 add_subdirectory(src/pybind11)
