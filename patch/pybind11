@@ -1,0 +1,24 @@
+diff --git a/tools/pybind11Tools.cmake b/tools/pybind11Tools.cmake
+index a7c471a..22f5466 100644
+--- a/tools/pybind11Tools.cmake
++++ b/tools/pybind11Tools.cmake
+@@ -104,7 +104,8 @@ function(_pybind11_add_lto_flags target_name prefer_thin_lto)
+     target_compile_options(${target_name} PRIVATE "$<$<NOT:$<CONFIG:Debug>>:${PYBIND11_LTO_CXX_FLAGS}>")
+   endif()
+   if (PYBIND11_LTO_LINKER_FLAGS)
+-    target_link_libraries(${target_name} PRIVATE "$<$<NOT:$<CONFIG:Debug>>:${PYBIND11_LTO_LINKER_FLAGS}>")
++    target_link_libraries(${target_name} "$<$<NOT:$<CONFIG:Debug>>:${PYBIND11_LTO_LINKER_FLAGS}>")
++#    target_link_libraries(${target_name} PRIVATE "$<$<NOT:$<CONFIG:Debug>>:${PYBIND11_LTO_LINKER_FLAGS}>")
+   endif()
+ endfunction()
+ 
+@@ -164,7 +165,8 @@ function(pybind11_add_module target_name)
+     # missing symbols, but that's perfectly fine -- they will be resolved at
+     # import time.
+ 
+-    target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
++    target_link_libraries(${target_name} "-undefined dynamic_lookup")
++#    target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
+ 
+     if(ARG_SHARED)
+       # Suppress CMake >= 3.0 warning for shared libraries

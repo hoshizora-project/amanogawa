@@ -1,0 +1,23 @@
+diff --git a/include/cpptoml.h b/include/cpptoml.h
+index 95c3820..2b097c3 100644
+--- a/include/cpptoml.h
++++ b/include/cpptoml.h
+@@ -1139,6 +1139,18 @@ class table : public base
+     }
+ 
+     /**
++     * Get all keys in the table
++     */
++    std::vector<std::string> get_keys() const {
++      std::vector<std::string> keys;
++      std::transform(map_.begin(), map_.end(), std::back_inserter(keys),
++                     [](const string_to_base_map::value_type &pair) {
++                       return pair.first;
++                     });
++      return keys;
++    }
++
++    /**
+      * Determines if this key table contains the given key.
+      */
+     bool contains(const std::string& key) const

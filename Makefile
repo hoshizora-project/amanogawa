@@ -4,6 +4,22 @@ RELEASE_BUILD_DIR := 'cmake-build-release'
 .PHONY: phony
 phony: ;
 
+# FIXME
+.PHONY: init
+init:
+	git submodule init
+	git submodule update
+	mkdir -p src/arrow/cpp/debug
+	cd src/arrow/cpp/debug && \
+		cmake .. && \
+		make
+	cd src/cpptoml && \
+		git apply ../../patch/cpptoml
+	cd src/pybind11 && \
+		git apply ../../patch/pybind11
+
+
+
 .PHONY: debug
 debug:
 	mkdir -p ${DEBUG_BUILD_DIR}
