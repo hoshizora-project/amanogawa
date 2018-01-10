@@ -1,15 +1,9 @@
 #ifndef AMANOGAWA_EXECUTOR_H
 #define AMANOGAWA_EXECUTOR_H
 
-#include "amanogawa/core/confing.h"
-#include "amanogawa/core/dl.h"
-#include "amanogawa/include/common.h"
-#include "amanogawa/include/flow_plugin.h"
-#include "amanogawa/include/sink_plugin.h"
-#include "amanogawa/include/source_plugin.h"
-#include "amanogawa/include/util.h"
 #include "arrow/api.h"
-#include <dlfcn.h>
+#include "amanogawa/include/api.h"
+#include "amanogawa/core/dl.h"
 #include <iostream>
 #include <string>
 #include <vector>

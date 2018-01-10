@@ -1,6 +1,4 @@
-#include "amanogawa/core/confing.h"
-#include "amanogawa/include/sink_plugin.h"
-#include "amanogawa/include/util.h"
+#include "amanogawa/include/api.h"
 #include <arrow/api.h>
 #include <fstream>
 #include <iostream>

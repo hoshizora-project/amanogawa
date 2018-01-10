@@ -1,6 +1,4 @@
-#include "amanogawa/core/arrow_helper.h"
-#include "amanogawa/core/confing.h"
-#include "amanogawa/include/flow_plugin.h"
+#include "amanogawa/include/api.h"
 #include <algorithm>
 #include <arrow/api.h>
 #include <arrow/compute/api.h>
