@@ -50,25 +50,34 @@ struct SourceFilePlugin : SourcePlugin {
       builders.emplace_back(get_arrow_builder(field->type()->name()));
     }
 
+    const auto skip_header = plugin_config->get_as<bool>("skip_header");
+    if (skip_header.value_or(false)) {
+      while (csv_is.line_number() == 1) {
+        std::string devnull;
+        csv_is >> devnull;
+      }
+    }
+
     // FIXME: Manage invalid row
+    // FIXME: Extra invalid row??? (mnist)
     while (csv_is) {
       for (size_t i = 0; i < num_fields; ++i) {
-        const auto type = schema->field(static_cast<int>(i))->type()->name();
+        const auto type = schema->field(static_cast<int>(i))->type()->id();
         // FIXME: Use visitor or pre-planing (concat field info for each row)
-        if (type == "int32") {
+        if (type == arrow::Int32Type::type_id) {
           int val;
           csv_is >> val;
-          std::dynamic_pointer_cast<arrow::Int32Builder>(builders.at(i))
+          std::static_pointer_cast<arrow::Int32Builder>(builders.at(i))
               ->Append(val);
-        } else if (type == "float64") {
+        } else if (type == arrow::DoubleType::type_id) {
           double val;
           csv_is >> val;
-          std::dynamic_pointer_cast<arrow::DoubleBuilder>(builders.at(i))
+          std::static_pointer_cast<arrow::DoubleBuilder>(builders.at(i))
               ->Append(val);
-        } else if (type == "utf8") {
+        } else if (type == arrow::StringType::type_id) {
           std::string val;
           csv_is >> val;
-          std::dynamic_pointer_cast<arrow::StringBuilder>(builders.at(i))
+          std::static_pointer_cast<arrow::StringBuilder>(builders.at(i))
               ->Append(val);
         } else {
           logger->warn("Detected unsupported type: {}", type);

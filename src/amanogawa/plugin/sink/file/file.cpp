@@ -47,14 +47,7 @@ struct SinkFilePlugin : SinkPlugin {
     const auto write_header = plugin_config->get_as<bool>("write_header");
     if (write_header.value_or(true)) {
       for (const auto &field : schema->fields()) {
-        auto field_name = field->name();
-
-        // TMP: Rename
-        if (field_name == "id") {
-          field_name = "ID";
-        }
-
-        csv_os << field_name;
+        csv_os << field->name();
       }
       csv_os << text::csv::endl;
     }
@@ -63,32 +56,26 @@ struct SinkFilePlugin : SinkPlugin {
       for (const auto &field : schema->fields()) {
         auto field_name = field->name();
 
-        // TMP: Rename
-        if (field_name == "ID") {
-          field_name = "id";
-        }
-
         const auto field_idx = data->schema()->GetFieldIndex(field_name);
         const auto col = data->column(static_cast<int>(field_idx));
+        const auto type = col->type()->id();
 
-        // TMP: Assume that all arrays consist of a single chunk
-        const auto chunk = col->data()->chunk(0);
-        const auto type = col->type()->name();
-
-        if (type == "int32") {
-          const auto int32_chunk =
-              std::dynamic_pointer_cast<arrow::Int32Array>(chunk);
-          csv_os << int32_chunk->Value(i);
-        } else if (type == "float64") {
-          const auto float64_chunk =
-              std::dynamic_pointer_cast<arrow::DoubleArray>(chunk);
-          csv_os << float64_chunk->Value(i);
-        } else if (type == "utf8") {
-          const auto utf8_chunk =
-              std::dynamic_pointer_cast<arrow::StringArray>(chunk);
-          csv_os << utf8_chunk->GetString(i);
-        } else {
-          logger->warn("Invalid");
+        for (const auto &chunk : col->data()->chunks()) {
+          if (type == arrow::Int32Type::type_id) {
+            const auto int32_chunk =
+                std::static_pointer_cast<arrow::Int32Array>(chunk);
+            csv_os << int32_chunk->Value(i);
+          } else if (type == arrow::DoubleType::type_id) {
+            const auto float64_chunk =
+                std::static_pointer_cast<arrow::DoubleArray>(chunk);
+            csv_os << float64_chunk->Value(i);
+          } else if (type == arrow::StringType::type_id) {
+            const auto utf8_chunk =
+                std::static_pointer_cast<arrow::StringArray>(chunk);
+            csv_os << utf8_chunk->GetString(i);
+          } else {
+            logger->warn("Detected unsupported type: {}", type);
+          }
         }
       }
       csv_os << text::csv::endl;

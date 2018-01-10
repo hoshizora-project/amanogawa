@@ -19,10 +19,15 @@ namespace core {
 void execute(const core::Config &config) {
   const auto logger = get_logger("executor");
 
-  const auto lib_source = DL::open("source_file");
-  // const auto lib_format = DL::open("format_csv");
-  const auto lib_flow = DL::open("flow_example_add");
-  const auto lib_sink = DL::open("sink_file");
+  const auto lib_source =
+      DL::open("source_" + *(config.source->get_as<std::string>("type")));
+  // const auto lib_source_format = DL::open(
+  //    "source_format_" +
+  //    *(config.source->get_qualified_as<std::string>("format.type")));
+  const auto lib_flow =
+      DL::open("flow_" + *(config.flow->get_as<std::string>("type")));
+  const auto lib_sink =
+      DL::open("sink_" + *(config.sink->get_as<std::string>("type")));
 
   const auto get_source_plugin = lib_source->sym<plugin::get_source_plugin_t>(
       func_name::get_source_plugin);

@@ -1,6 +1,8 @@
 [source]
+type = "file"
 [source.file]
 path = "original.csv"
+skip_header = true
 [source.format.csv]
 delimiter = ","
 [[source.format.csv.columns]]
@@ -15,19 +17,18 @@ type = "string"
 #[confluence]
 
 [flow]
-[[flow.rename]]
-from = "id"
-to = "ID"
+type = "filter"
 
 #[branch]
 
 [sink]
+type = "file"
 [sink.file]
 path = "result.csv"
 [sink.format.csv]
 delimiter = "\t"
 [[sink.format.csv.columns]]
-name = "ID"
+name = "id"
 type = "int"
 [[sink.format.csv.columns]]
 name = "name"
