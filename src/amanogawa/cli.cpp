@@ -1,5 +1,5 @@
-#include "amanogawa/include/api.h"
 #include "amanogawa/core/executor.h"
+#include "amanogawa/include/api.h"
 
 namespace amanogawa {
 void main(int argc, char *argv[]) {

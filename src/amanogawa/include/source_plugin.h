@@ -21,8 +21,7 @@ struct SourcePlugin : Plugin {
 };
 
 using get_source_plugin_return_t = std::unique_ptr<SourcePlugin>;
-using get_source_plugin_t =
-    get_source_plugin_return_t (*)(const Config &);
+using get_source_plugin_t = get_source_plugin_return_t (*)(const Config &);
 } // namespace plugin
 } // namespace amanogawa
 

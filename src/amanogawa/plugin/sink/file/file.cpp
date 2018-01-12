@@ -82,8 +82,7 @@ struct SinkFilePlugin : SinkPlugin {
   }
 };
 
-extern "C" get_sink_plugin_return_t
-get_sink_plugin(const Config &config) {
+extern "C" get_sink_plugin_return_t get_sink_plugin(const Config &config) {
   return std::make_unique<SinkFilePlugin>(config);
 }
 } // namespace file

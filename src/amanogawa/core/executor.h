@@ -1,9 +1,9 @@
 #ifndef AMANOGAWA_EXECUTOR_H
 #define AMANOGAWA_EXECUTOR_H
 
-#include "arrow/api.h"
-#include "amanogawa/include/api.h"
 #include "amanogawa/core/dl.h"
+#include "amanogawa/include/api.h"
+#include "arrow/api.h"
 #include <iostream>
 #include <string>
 #include <vector>

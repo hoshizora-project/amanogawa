@@ -17,8 +17,7 @@ struct FlowPlugin : Plugin {
   virtual std::shared_ptr<arrow::Table>
   flow(const std::shared_ptr<arrow::Table> &) const = 0;
 
-  FlowPlugin(const Config &config)
-      : Plugin(config), flow_config(config.flow) {}
+  FlowPlugin(const Config &config) : Plugin(config), flow_config(config.flow) {}
 };
 
 using get_flow_plugin_return_t = std::unique_ptr<FlowPlugin>;
