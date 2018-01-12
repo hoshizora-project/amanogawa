@@ -10,12 +10,12 @@ namespace file {
 struct SourceFilePlugin : SourcePlugin {
   std::string plugin_name() const override { return "file"; }
   const logger_t logger = get_logger(SourcePlugin::plugin_full_name());
-  const core::Config::config_map plugin_config;
+  const Config::config_map plugin_config;
 
   std::shared_ptr<arrow::Schema> schema;
 
   // TODO: Validate config
-  explicit SourceFilePlugin(const core::Config &config)
+  explicit SourceFilePlugin(const Config &config)
       : SourcePlugin(config),
         plugin_config(source_config->get_table(plugin_name())) {
     const auto cols =
@@ -97,7 +97,7 @@ struct SourceFilePlugin : SourcePlugin {
 };
 
 extern "C" get_source_plugin_return_t
-get_source_plugin(const core::Config &config) {
+get_source_plugin(const Config &config) {
   return std::make_unique<SourceFilePlugin>(config);
 }
 } // namespace file

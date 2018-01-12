@@ -5,8 +5,8 @@
 namespace amanogawa {
 PYBIND11_MODULE(amanogawa, m) {
 m.doc() = "amanogawa";
-pybind11::class_<core::Config> config(m, "Config");
-config.def("load_from_file", &core::Config::load_from_file,
+pybind11::class_<Config> config(m, "Config");
+config.def("load_from_file", &Config::load_from_file,
 "load config from file");
 m.def("execute", &core::execute, "execute");
 }

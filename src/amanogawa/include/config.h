@@ -5,7 +5,6 @@
 #include "cpptoml/include/cpptoml.h"
 
 namespace amanogawa {
-namespace core {
 class Config {
 public:
   using config_map = std::shared_ptr<cpptoml::table>;
@@ -37,7 +36,6 @@ private:
   }
 };
 const logger_t Config::logger = get_logger("config");
-} // namespace core
 } // namespace amanogawa
 
 #endif

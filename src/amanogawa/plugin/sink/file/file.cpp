@@ -13,11 +13,11 @@ namespace file {
 struct SinkFilePlugin : SinkPlugin {
   std::string plugin_name() const override { return "file"; }
   const logger_t logger = get_logger(SinkPlugin::plugin_full_name());
-  const core::Config::config_map plugin_config;
+  const Config::config_map plugin_config;
 
   std::shared_ptr<arrow::Schema> schema;
 
-  explicit SinkFilePlugin(const core::Config &config)
+  explicit SinkFilePlugin(const Config &config)
       : SinkPlugin(config),
         plugin_config(sink_config->get_table(plugin_name())) {
     const auto cols =
@@ -83,7 +83,7 @@ struct SinkFilePlugin : SinkPlugin {
 };
 
 extern "C" get_sink_plugin_return_t
-get_sink_plugin(const core::Config &config) {
+get_sink_plugin(const Config &config) {
   return std::make_unique<SinkFilePlugin>(config);
 }
 } // namespace file

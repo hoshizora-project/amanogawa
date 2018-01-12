@@ -10,7 +10,7 @@
 
 namespace amanogawa {
 namespace core {
-void execute(const core::Config &config) {
+void execute(const Config &config) {
   const auto logger = get_logger("executor");
 
   const auto lib_source =
