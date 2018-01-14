@@ -7,16 +7,17 @@
 #include <stdexcept>
 #include <string>
 
+#define STRINGIFY(str) #str
+#define STRING_OF(str) STRINGIFY(str)
+
 namespace amanogawa {
 namespace core {
 class DL {
 public:
 #ifdef __APPLE__
   static constexpr auto default_mode = RTLD_LOCAL; // mac
-  static constexpr auto ext = "dylib";
 #elif __linux__
   static constexpr auto default_mode = RTLD_LAZY; // linux
-  static constexpr auto ext = "so";
 #endif
 
   ~DL() {
@@ -26,12 +27,17 @@ public:
   }
 
   static std::shared_ptr<DL> open(const std::string &lib_name,
+                                  const bool is_full_lib_name = false,
                                   const int mode = default_mode) {
-    auto handle = ::dlopen(("lib" + lib_name + "." + ext).c_str(), mode);
+    const auto full_lib_name =
+        is_full_lib_name ? lib_name
+                         : "lib" + lib_name + "." + STRING_OF(LIBS_EXT);
+
+    const auto handle = ::dlopen(full_lib_name.c_str(), mode);
     if (handle != nullptr) {
       return std::shared_ptr<DL>(new DL(handle));
     } else {
-      throw std::runtime_error("Failed to open " + lib_name + ". " +
+      throw std::runtime_error("Failed to open " + full_lib_name + ". " +
                                ::dlerror());
     }
   }

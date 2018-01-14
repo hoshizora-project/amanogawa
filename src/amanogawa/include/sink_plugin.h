@@ -14,7 +14,7 @@ struct SinkPlugin : Plugin {
     return "sink_" + plugin_name();
   }
 
-  virtual void drain(const std::shared_ptr<arrow::Table> &data) const = 0;
+  virtual void *drain(const std::shared_ptr<arrow::Table> &data) const = 0;
 
   SinkPlugin(const Config &config) : Plugin(config), sink_config(config.sink) {}
 };

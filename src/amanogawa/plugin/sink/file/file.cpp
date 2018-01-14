@@ -33,7 +33,7 @@ struct SinkFilePlugin : SinkPlugin {
   }
 
   // TODO: Report exit status
-  void drain(const std::shared_ptr<arrow::Table> &data) const override {
+  void *drain(const std::shared_ptr<arrow::Table> &data) const override {
     logger->info("drain");
 
     const auto file_name = *plugin_config->get_as<std::string>("path");
@@ -79,10 +79,13 @@ struct SinkFilePlugin : SinkPlugin {
       csv_os << text::csv::endl;
     }
     fs.close();
+
+    return nullptr;
   }
 };
 
-extern "C" get_sink_plugin_return_t get_sink_plugin(const Config &config) {
+__attribute__((visibility("default"))) extern "C" get_sink_plugin_return_t
+get_sink_plugin(const Config &config) {
   return std::make_unique<SinkFilePlugin>(config);
 }
 } // namespace file

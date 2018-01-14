@@ -4,21 +4,23 @@ RELEASE_BUILD_DIR := 'cmake-build-release'
 .PHONY: phony
 phony: ;
 
-# FIXME
+# FIXME: All, python version
 .PHONY: init
 init:
 	git submodule init
 	git submodule update
-	mkdir -p src/arrow/cpp/debug
-	cd src/arrow/cpp/debug && \
-		cmake .. && \
+	mkdir -p src/arrow/cpp/build
+	cd src/arrow/cpp/build && \
+		cmake \
+			-DARROW_BUILD_TESTS=OFF \
+			-DARROW_PYTHON=ON \
+			-DPYTHON_EXECUTABLE=python3 \
+			.. && \
 		make
 	cd src/cpptoml && \
 		git apply ../../patch/cpptoml
 	cd src/pybind11 && \
 		git apply ../../patch/pybind11
-
-
 
 .PHONY: debug
 debug:
@@ -57,7 +59,7 @@ scan-release:
 
 .PHONY: format
 format:
-	zsh -c 'clang-format -i -style=file src/amanogawa/**/*.(h|cpp)'
+	zsh -c 'clang-format -i -style=LLVM src/amanogawa/**/*.(h|cpp)'
 
 .PHONY: clean-debug
 clean-debug:

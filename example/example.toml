@@ -22,9 +22,12 @@ type = "filter"
 #[branch]
 
 [sink]
-type = "file"
+#type = "file"
+type = "numpy"
 [sink.file]
 path = "result.csv"
+[sink.numpy]
+cols = [ "id" ]
 [sink.format.csv]
 delimiter = "\t"
 [[sink.format.csv.columns]]

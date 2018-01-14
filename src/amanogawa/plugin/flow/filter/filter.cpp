@@ -20,7 +20,8 @@ struct FlowFilterPlugin : FlowPlugin {
   }
 };
 
-extern "C" get_flow_plugin_return_t get_flow_plugin(const Config &config) {
+__attribute__((visibility("default"))) extern "C" get_flow_plugin_return_t
+get_flow_plugin(const Config &config) {
   return std::make_unique<FlowFilterPlugin>(config);
 }
 } // namespace filter

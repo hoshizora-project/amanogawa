@@ -10,7 +10,7 @@
 
 namespace amanogawa {
 namespace core {
-void execute(const Config &config) {
+void *execute(const Config &config) {
   const auto logger = get_logger("executor");
 
   const auto lib_source =
@@ -41,8 +41,10 @@ void execute(const Config &config) {
   logger->info("Source-phase finished");
   auto transformed = flow_plugin->flow(data);
   logger->info("Flow-phase finished");
-  sink_plugin->drain(transformed);
+  auto res = sink_plugin->drain(transformed);
   logger->info("Sink-phase finished");
+
+  return res;
 }
 } // namespace core
 } // namespace amanogawa

@@ -5,7 +5,7 @@
 #include <string>
 
 namespace amanogawa {
-//struct ConfigBuilder {
+// struct ConfigBuilder {
 //  cpptoml::table config;
 //
 //  void add(const std::string &key, const std::string &value){

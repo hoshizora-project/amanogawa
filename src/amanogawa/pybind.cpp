@@ -8,6 +8,7 @@ PYBIND11_MODULE(amanogawa, m) {
   pybind11::class_<Config> config(m, "Config");
   config.def("load_from_file", &Config::load_from_file,
              "load config from file");
-  m.def("execute", &core::execute, "execute");
+  m.def("execute", &core::execute, "execute",
+        pybind11::return_value_policy::reference);
 }
 } // namespace amanogawa
