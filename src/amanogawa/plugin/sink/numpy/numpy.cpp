@@ -12,11 +12,9 @@ namespace numpy {
 struct SinkNumpyPlugin : SinkPlugin {
   std::string plugin_name() const override { return "numpy"; }
   const logger_t logger = get_logger(SinkPlugin::plugin_full_name());
-  const Config::config_map plugin_config;
 
-  explicit SinkNumpyPlugin(const Config &config)
-      : SinkPlugin(config),
-        plugin_config(sink_config->get_table(plugin_name())) {}
+  explicit SinkNumpyPlugin(const std::string &id, const config_t &config)
+      : SinkPlugin(id, config) {}
 
   void *drain(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("drain");
@@ -37,9 +35,15 @@ struct SinkNumpyPlugin : SinkPlugin {
     arrow::Tensor tensor(arrow::float64(), h, {1, table->num_rows()});
 
     Py_Initialize();
+    // PyObject *t;
+    // t = PyTuple_New(3);
+    // PyTuple_SetItem(t, 0, PyLong_FromLong(1L));
+    // PyTuple_SetItem(t, 1, PyLong_FromLong(2L));
+    // PyTuple_SetItem(t, 2, PyUnicode_FromString("three"));
 
+    auto base = new PyObject();
     auto res = new PyObject();
-    arrow::py::TensorToNdarray(tensor, res, &res);
+    arrow::py::TensorToNdarray(tensor, base, &res);
     return res;
   }
 };

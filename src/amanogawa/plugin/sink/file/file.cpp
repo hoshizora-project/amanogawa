@@ -13,13 +13,11 @@ namespace file {
 struct SinkFilePlugin : SinkPlugin {
   std::string plugin_name() const override { return "file"; }
   const logger_t logger = get_logger(SinkPlugin::plugin_full_name());
-  const Config::config_map plugin_config;
 
   std::shared_ptr<arrow::Schema> schema;
 
-  explicit SinkFilePlugin(const Config &config)
-      : SinkPlugin(config),
-        plugin_config(sink_config->get_table(plugin_name())) {
+  explicit SinkFilePlugin(const std::string &id, const config_t &config)
+      : SinkPlugin(id, config) {
     const auto cols =
         sink_config->get_table_array_qualified("format.csv.columns");
 

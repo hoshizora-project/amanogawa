@@ -14,11 +14,9 @@ namespace example_add {
 struct FlowToGraphPlugin : FlowPlugin {
   std::string plugin_name() const override { return "to_graph"; }
   const logger_t logger = get_logger(FlowPlugin::plugin_full_name());
-  const Config::config_map plugin_config;
 
-  explicit FlowToGraphPlugin(const Config &config)
-      : FlowPlugin(config),
-        plugin_config(flow_config->get_table(plugin_name())) {}
+  explicit FlowToGraphPlugin(const std::string &id, const config_t &config)
+      : FlowPlugin(id, config) {}
 
   // FIXME: Use NN-Descent
   std::shared_ptr<arrow::Table>

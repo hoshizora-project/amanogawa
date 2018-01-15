@@ -10,14 +10,12 @@ namespace file {
 struct SourceFilePlugin : SourcePlugin {
   std::string plugin_name() const override { return "file"; }
   const logger_t logger = get_logger(SourcePlugin::plugin_full_name());
-  const Config::config_map plugin_config;
 
   std::shared_ptr<arrow::Schema> schema;
 
   // TODO: Validate config
-  explicit SourceFilePlugin(const Config &config)
-      : SourcePlugin(config),
-        plugin_config(source_config->get_table(plugin_name())) {
+  explicit SourceFilePlugin(const std::string &id, const config_t &config)
+      : SourcePlugin(id, config) {
     const auto cols =
         source_config->get_table_array_qualified("format.csv.columns");
 
@@ -97,8 +95,8 @@ struct SourceFilePlugin : SourcePlugin {
 };
 
 __attribute__((visibility("default"))) extern "C" get_source_plugin_return_t
-get_source_plugin(const Config &config) {
-  return std::make_unique<SourceFilePlugin>(config);
+get_source_plugin(const std::string &id, const config_t &config) {
+  return std::make_unique<SourceFilePlugin>(id, config);
 }
 } // namespace file
 } // namespace source

@@ -8,12 +8,14 @@
 namespace amanogawa {
 namespace plugin {
 struct Plugin {
-  const Config config;
+  const std::string id;
+  const config_t root_config;
+  const Config::table_t config;
   virtual std::string plugin_name() const = 0;
   virtual std::string plugin_full_name() const = 0;
 
-  // TODO: Change top-level config type, std::shared_ptr<cpptoml::table> (?)
-  Plugin(const Config &config) : config(config) {}
+  Plugin(const std::string &id, const config_t &config)
+      : id(id), root_config(config), config(root_config->get_by_id(id)) {}
 };
 } // namespace plugin
 } // namespace amanogawa

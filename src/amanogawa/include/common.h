@@ -2,17 +2,34 @@
 #define AMANOGAWA_COMMON_H
 
 namespace amanogawa {
-constexpr auto source_spring = "spring";
-constexpr auto format_parse = "parse";
-constexpr auto flow_flow = "flow";
-constexpr auto format_format = "format";
-constexpr auto sink_drain = "drain";
+namespace string {
+namespace clazz {
+constexpr auto _source = "source";
+namespace source {
+constexpr auto spring = "spring";
+}
+constexpr auto _flow = "flow";
+namespace flow {
+constexpr auto flow = "flow";
+}
+constexpr auto _branch = "branch";
+namespace branch {
+constexpr auto branch = "branch";
+}
+constexpr auto _confluence = "confluence";
+namespace confluence {
+constexpr auto confluent = "confluent";
+}
+constexpr auto _sink = "sink";
+namespace sink {
+constexpr auto drain = "drain";
+}
+} // namespace clazz
 
 namespace func_name {
-constexpr auto get_source_plugin = "get_source_plugin";
-constexpr auto get_flow_plugin = "get_flow_plugin";
-constexpr auto get_sink_plugin = "get_sink_plugin";
+constexpr auto get_plugin = "get_plugin";
 } // namespace func_name
+} // namespace string
 } // namespace amanogawa
 
 #endif // AMANOGAWA_COMMON_H

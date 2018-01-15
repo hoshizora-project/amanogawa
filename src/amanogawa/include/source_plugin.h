@@ -9,19 +9,19 @@
 namespace amanogawa {
 namespace plugin {
 struct SourcePlugin : Plugin {
-  const Config::config_map source_config;
   std::string plugin_full_name() const override {
     return "source_" + plugin_name();
   }
 
   virtual std::shared_ptr<arrow::Table> spring() const = 0;
 
-  SourcePlugin(const Config &config)
-      : Plugin(config), source_config(config.source) {}
+  SourcePlugin(const std::string &id, const config_t &config)
+      : Plugin(id, config) {}
 };
 
 using get_source_plugin_return_t = std::unique_ptr<SourcePlugin>;
-using get_source_plugin_t = get_source_plugin_return_t (*)(const Config &);
+using get_source_plugin_t = get_source_plugin_return_t (*)(const std::string &,
+                                                           const config_t &);
 } // namespace plugin
 } // namespace amanogawa
 
