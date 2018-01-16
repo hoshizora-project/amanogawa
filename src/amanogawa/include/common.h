@@ -26,9 +26,15 @@ constexpr auto drain = "drain";
 }
 } // namespace clazz
 
-namespace func_name {
+namespace func {
 constexpr auto get_plugin = "get_plugin";
-} // namespace func_name
+} // namespace func
+
+namespace keyword {
+constexpr auto clazz = "clazz";
+constexpr auto type = "type";
+constexpr auto from = "from";
+} // namespace keyword
 } // namespace string
 } // namespace amanogawa
 

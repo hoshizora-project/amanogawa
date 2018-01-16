@@ -1,6 +1,7 @@
 #ifndef AMANOGAWA_CONF_H
 #define AMANOGAWA_CONF_H
 
+#include "amanogawa/include/common.h"
 #include "amanogawa/include/util.h"
 #include <cpptoml.h>
 #include <exception>
@@ -40,17 +41,17 @@ struct Config {
       const auto class_table = table->get_table(clazz);
       const auto ids = class_table->get_keys();
       for (const auto &id : ids) {
-        const auto type = *class_table->get_as<std::string>(id);
+        const auto id_table = class_table->get_table(id);
+        const auto type = *id_table->get_as<std::string>(string::keyword::type);
         const auto from =
             clazz == string::clazz::_source
                 ? std::vector<std::string>{}
                 : clazz == string::clazz::_flow
-                      ? std::vector<std::string>{*class_table
-                                                      ->get_as<std::string>(
-                                                          "from")}
+                      ? std::vector<std::string>{*id_table->get_as<std::string>(
+                            string::keyword::from)}
                       : clazz == string::clazz::_sink
-                            ? std::vector<std::string>{*class_table->get_as<
-                                  std::string>("from")}
+                            ? std::vector<std::string>{*id_table->get_as<
+                                  std::string>(string::keyword::from)}
                             : std::vector<std::string>{};
         const auto pair = std::make_pair(id, from);
         if (each_plugin_type.count(type)) {

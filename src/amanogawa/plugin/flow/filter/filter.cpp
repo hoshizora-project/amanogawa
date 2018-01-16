@@ -14,14 +14,14 @@ struct FlowFilterPlugin : FlowPlugin {
       : FlowPlugin(id, from, config) {}
 
   std::shared_ptr<arrow::Table>
-  flow(const std::shared_ptr<arrow::Table> &data) const override {
-    return data; // TMP: pass-through
+  flow(const std::shared_ptr<arrow::Table> &table) const override {
+    return table; // TMP: pass-through
   }
 };
 
 __attribute__((visibility("default"))) extern "C" get_flow_plugin_return_t
-get_flow_plugin(const std::string &id, const std::string &from,
-                const config_t &config) {
+get_plugin(const std::string &id, const std::string &from,
+           const config_t &config) {
   return std::make_unique<FlowFilterPlugin>(id, from, config);
 }
 } // namespace filter

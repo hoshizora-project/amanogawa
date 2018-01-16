@@ -14,47 +14,51 @@ struct SinkFilePlugin : SinkPlugin {
   std::string plugin_name() const override { return "file"; }
   const logger_t logger = get_logger(SinkPlugin::plugin_full_name());
 
-  std::shared_ptr<arrow::Schema> schema;
+  std::shared_ptr<arrow::Schema> output_schema;
 
   explicit SinkFilePlugin(const std::string &id, const std::string &from,
                           const config_t &config)
       : SinkPlugin(id, from, config) {
-    const auto cols =
-        this->config->get_table_array_qualified("format.csv.columns");
-
-    std::vector<std::shared_ptr<arrow::Field>> fields;
-    for (const auto &col : *cols) {
-      fields.emplace_back(std::make_shared<arrow::Field>(
-          *col->get_as<std::string>("name"),
-          get_arrow_data_type(*col->get_as<std::string>("type"))));
+    // FIXME: Bug in cpptoml; if array of tables is empty, return nullptr
+    const auto cols = format_config->get_table_array("columns");
+    if (cols != nullptr) {
+      std::vector<std::shared_ptr<arrow::Field>> fields;
+      for (const auto &col : *cols) {
+        fields.emplace_back(std::make_shared<arrow::Field>(
+            *col->get_as<std::string>("name"),
+            get_arrow_data_type(*col->get_as<std::string>("type"))));
+      }
+      output_schema = arrow::schema(std::move(fields));
     }
-    schema = arrow::schema(std::move(fields));
   }
 
   // TODO: Report exit status
-  void *drain(const std::shared_ptr<arrow::Table> &data) const override {
+  void *drain(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("drain");
+
+    const auto output_fields = output_schema != nullptr
+                                   ? output_schema->fields()
+                                   : table->schema()->fields();
 
     const auto file_name = *config->get_as<std::string>("path");
     std::ofstream fs(file_name);
-    const auto delimiter =
-        *config->get_qualified_as<std::string>("format.csv.delimiter");
+    const auto delimiter = *config->get_as<std::string>("delimiter");
     text::csv::csv_ostream csv_os(fs, delimiter[0]);
 
     const auto write_header = config->get_as<bool>("write_header");
     if (write_header.value_or(true)) {
-      for (const auto &field : schema->fields()) {
+      for (const auto &field : output_fields) {
         csv_os << field->name();
       }
       csv_os << text::csv::endl;
     }
 
-    for (size_t i = 0, end = data->num_rows(); i < end; ++i) {
-      for (const auto &field : schema->fields()) {
+    for (size_t i = 0, end = table->num_rows(); i < end; ++i) {
+      for (const auto &field : output_fields) {
         auto field_name = field->name();
 
-        const auto field_idx = data->schema()->GetFieldIndex(field_name);
-        const auto col = data->column(static_cast<int>(field_idx));
+        const auto field_idx = table->schema()->GetFieldIndex(field_name);
+        const auto col = table->column(static_cast<int>(field_idx));
         const auto type = col->type()->id();
 
         for (const auto &chunk : col->data()->chunks()) {
@@ -84,8 +88,8 @@ struct SinkFilePlugin : SinkPlugin {
 };
 
 __attribute__((visibility("default"))) extern "C" get_sink_plugin_return_t
-get_sink_plugin(const std::string &id, const std::string &from,
-                const config_t &config) {
+get_plugin(const std::string &id, const std::string &from,
+           const config_t &config) {
   return std::make_unique<SinkFilePlugin>(id, from, config);
 }
 } // namespace file

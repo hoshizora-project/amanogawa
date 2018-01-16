@@ -21,7 +21,7 @@ struct FlowToGraphPlugin : FlowPlugin {
 
   // FIXME: Use NN-Descent
   std::shared_ptr<arrow::Table>
-  flow(const std::shared_ptr<arrow::Table> &data) const override {
+  flow(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("flow");
 
     // TODO: Share input, intermediate and output schema on config
@@ -35,7 +35,7 @@ struct FlowToGraphPlugin : FlowPlugin {
     }
 
     const auto num_feats = fields.size() - 1; // -1 means label
-    const auto num_entries = data->num_rows();
+    const auto num_entries = table->num_rows();
 
     const auto input_schema = arrow::schema(fields);
 
@@ -48,8 +48,8 @@ struct FlowToGraphPlugin : FlowPlugin {
           continue;
         }
 
-        const auto field_idx = data->schema()->GetFieldIndex(field_name);
-        const auto col = data->column(field_idx);
+        const auto field_idx = table->schema()->GetFieldIndex(field_name);
+        const auto col = table->column(field_idx);
         const auto chunk = col->data()->chunk(0);
         const auto float64_chunk =
             std::dynamic_pointer_cast<arrow::DoubleArray>(chunk);
@@ -124,8 +124,8 @@ struct FlowToGraphPlugin : FlowPlugin {
 };
 
 __attribute__((visibility("default"))) extern "C" get_flow_plugin_return_t
-get_flow_plugin(const std::string &id, const std::string &from,
-                const config_t &config) {
+get_plugin(const std::string &id, const std::string &from,
+           const config_t &config) {
   return std::make_unique<FlowToGraphPlugin>(id, from, config);
 }
 } // namespace example_add
