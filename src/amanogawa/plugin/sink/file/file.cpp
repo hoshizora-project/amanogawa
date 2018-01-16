@@ -16,15 +16,16 @@ struct SinkFilePlugin : SinkPlugin {
 
   std::shared_ptr<arrow::Schema> schema;
 
-  explicit SinkFilePlugin(const std::string &id, const config_t &config)
-      : SinkPlugin(id, config) {
+  explicit SinkFilePlugin(const std::string &id, const std::string &from,
+                          const config_t &config)
+      : SinkPlugin(id, from, config) {
     const auto cols =
-        sink_config->get_table_array_qualified("format.csv.columns");
+        this->config->get_table_array_qualified("format.csv.columns");
 
     std::vector<std::shared_ptr<arrow::Field>> fields;
     for (const auto &col : *cols) {
       fields.emplace_back(std::make_shared<arrow::Field>(
-          *(col->get_as<std::string>("name")),
+          *col->get_as<std::string>("name"),
           get_arrow_data_type(*col->get_as<std::string>("type"))));
     }
     schema = arrow::schema(std::move(fields));
@@ -34,13 +35,13 @@ struct SinkFilePlugin : SinkPlugin {
   void *drain(const std::shared_ptr<arrow::Table> &data) const override {
     logger->info("drain");
 
-    const auto file_name = *plugin_config->get_as<std::string>("path");
+    const auto file_name = *config->get_as<std::string>("path");
     std::ofstream fs(file_name);
     const auto delimiter =
-        *sink_config->get_qualified_as<std::string>("format.csv.delimiter");
+        *config->get_qualified_as<std::string>("format.csv.delimiter");
     text::csv::csv_ostream csv_os(fs, delimiter[0]);
 
-    const auto write_header = plugin_config->get_as<bool>("write_header");
+    const auto write_header = config->get_as<bool>("write_header");
     if (write_header.value_or(true)) {
       for (const auto &field : schema->fields()) {
         csv_os << field->name();
@@ -83,8 +84,9 @@ struct SinkFilePlugin : SinkPlugin {
 };
 
 __attribute__((visibility("default"))) extern "C" get_sink_plugin_return_t
-get_sink_plugin(const Config &config) {
-  return std::make_unique<SinkFilePlugin>(config);
+get_sink_plugin(const std::string &id, const std::string &from,
+                const config_t &config) {
+  return std::make_unique<SinkFilePlugin>(id, from, config);
 }
 } // namespace file
 } // namespace sink

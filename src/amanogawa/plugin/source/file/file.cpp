@@ -16,13 +16,12 @@ struct SourceFilePlugin : SourcePlugin {
   // TODO: Validate config
   explicit SourceFilePlugin(const std::string &id, const config_t &config)
       : SourcePlugin(id, config) {
-    const auto cols =
-        source_config->get_table_array_qualified("format.csv.columns");
-
+    const auto format = *format_config->get_as<std::string>("type");
+    const auto cols = format_config->get_table_array("columns");
     std::vector<std::shared_ptr<arrow::Field>> fields;
     for (const auto &col : *cols) {
       fields.emplace_back(std::make_shared<arrow::Field>(
-          *(col->get_as<std::string>("name")),
+          *col->get_as<std::string>("name"),
           get_arrow_data_type(*col->get_as<std::string>("type"))));
     }
     schema = arrow::schema(std::move(fields));
@@ -32,10 +31,10 @@ struct SourceFilePlugin : SourcePlugin {
   std::shared_ptr<arrow::Table> spring() const override {
     logger->info("spring");
 
-    const auto file_name = *plugin_config->get_as<std::string>("path");
+    const auto file_name = *config->get_as<std::string>("path");
     std::ifstream fs(file_name);
     const auto delimiter =
-        *source_config->get_qualified_as<std::string>("format.csv.delimiter");
+        *format_config->get_qualified_as<std::string>("delimiter");
     text::csv::csv_istream csv_is(fs, delimiter[0]);
 
     const auto num_fields = static_cast<size_t>(schema->num_fields());
@@ -46,7 +45,7 @@ struct SourceFilePlugin : SourcePlugin {
       builders.emplace_back(get_arrow_builder(field->type()->name()));
     }
 
-    const auto skip_header = plugin_config->get_as<bool>("skip_header");
+    const auto skip_header = format_config->get_as<bool>("skip_header");
     if (skip_header.value_or(false)) {
       while (csv_is.line_number() == 1) {
         std::string devnull;

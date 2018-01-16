@@ -15,8 +15,9 @@ struct FlowToGraphPlugin : FlowPlugin {
   std::string plugin_name() const override { return "to_graph"; }
   const logger_t logger = get_logger(FlowPlugin::plugin_full_name());
 
-  explicit FlowToGraphPlugin(const std::string &id, const config_t &config)
-      : FlowPlugin(id, config) {}
+  explicit FlowToGraphPlugin(const std::string &id, const std::string &from,
+                             const config_t &config)
+      : FlowPlugin(id, from, config) {}
 
   // FIXME: Use NN-Descent
   std::shared_ptr<arrow::Table>
@@ -24,8 +25,8 @@ struct FlowToGraphPlugin : FlowPlugin {
     logger->info("flow");
 
     // TODO: Share input, intermediate and output schema on config
-    const auto cols =
-        config.source->get_table_array_qualified("format.csv.columns");
+    const auto cols = root_config->get_by_id(from)->get_table_array_qualified(
+        "format.csv.columns");
     std::vector<std::shared_ptr<arrow::Field>> fields;
     for (const auto &col : *cols) {
       fields.emplace_back(
@@ -123,8 +124,9 @@ struct FlowToGraphPlugin : FlowPlugin {
 };
 
 __attribute__((visibility("default"))) extern "C" get_flow_plugin_return_t
-get_flow_plugin(const Config &config) {
-  return std::make_unique<FlowToGraphPlugin>(config);
+get_flow_plugin(const std::string &id, const std::string &from,
+                const config_t &config) {
+  return std::make_unique<FlowToGraphPlugin>(id, from, config);
 }
 } // namespace example_add
 } // namespace flow

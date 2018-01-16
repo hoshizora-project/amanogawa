@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace amanogawa {
@@ -22,28 +23,45 @@ struct Config {
   }
 
   // tiny helpers
-  std::unordered_map<std::string,
-                     std::unordered_map<std::string, std::vector<std::string>>>
-  read_plugins() const {
-    std::unordered_map<
-        std::string, std::unordered_map<std::string, std::vector<std::string>>>
-        result;
-    const auto root_keys = table->get_keys();
-    for (const auto &root_key : root_keys) {
-      std::unordered_map<std::string, std::vector<std::string>>
+  // [class, [type, [id, from]]]
+  using plugin_meta_t = std::unordered_map<
+      std::string,
+      std::unordered_map<
+          std::string,
+          std::vector<std::pair<std::string, std::vector<std::string>>>>>;
+  plugin_meta_t read_plugins() const {
+    plugin_meta_t result;
+    const auto clazzes = table->get_keys();
+    for (const auto &clazz : clazzes) {
+      std::unordered_map<
+          std::string,
+          std::vector<std::pair<std::string, std::vector<std::string>>>>
           each_plugin_type;
-      const auto keys = table->get_table(root_key)->get_keys();
-      for (const auto &id : keys) {
-        const auto type =
-            *(table->get_qualified_as<std::string>(root_key + "." + id));
+      const auto class_table = table->get_table(clazz);
+      const auto ids = class_table->get_keys();
+      for (const auto &id : ids) {
+        const auto type = *class_table->get_as<std::string>(id);
+        const auto from =
+            clazz == string::clazz::_source
+                ? std::vector<std::string>{}
+                : clazz == string::clazz::_flow
+                      ? std::vector<std::string>{*class_table
+                                                      ->get_as<std::string>(
+                                                          "from")}
+                      : clazz == string::clazz::_sink
+                            ? std::vector<std::string>{*class_table->get_as<
+                                  std::string>("from")}
+                            : std::vector<std::string>{};
+        const auto pair = std::make_pair(id, from);
         if (each_plugin_type.count(type)) {
-          each_plugin_type[type].emplace_back(id);
+          each_plugin_type[type].emplace_back(pair);
         } else {
-          std::vector<std::string> ids = {id};
-          each_plugin_type.emplace(type, ids);
+          std::vector<std::pair<std::string, std::vector<std::string>>>
+              id_list = {pair};
+          each_plugin_type.emplace(type, id_list);
         }
       }
-      result.emplace(root_key, each_plugin_type);
+      result.emplace(clazz, each_plugin_type);
     }
     return result;
   }

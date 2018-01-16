@@ -1,39 +1,26 @@
-[source]
+[source.read_awesome_csv]
 type = "file"
-[source.file]
 path = "original.csv"
-skip_header = true
-[source.format.csv]
+[source.read_awesome_csv.format]
+type = "csv"
 delimiter = ","
-[[source.format.csv.columns]]
-name = "id"
-type = "int"
-[[source.format.csv.columns]]
-name = "name"
-type = "string"
+skip_header = true
+columns = [
+  { name = "id", type = "double" },
+  { name = "name", type = "string" }
+]
 
-#[source.encoding.gzip]
+[flow.construct_knn_graph]
+type = "to_graph"
+from = "read_awesome_csv"
+[flow.construct_knn_graph.distance]
+type = "raw"
+column = "id"
 
-#[confluence]
-
-[flow]
-type = "filter"
-
-#[branch]
-
-[sink]
-#type = "file"
-type = "numpy"
-[sink.file]
-path = "result.csv"
-[sink.numpy]
-cols = [ "id" ]
-[sink.format.csv]
+[sink.write_awesome_tsv]
+type = "file"
+from = "construct_knn_graph"
+[sink.write_awesome_tsv.format]
+type = "csv"
 delimiter = "\t"
-[[sink.format.csv.columns]]
-name = "id"
-type = "int"
-[[sink.format.csv.columns]]
-name = "name"
-type = "string"
-#[sink.encoding.gzip]
+columns = [] # all

@@ -1,0 +1,63 @@
+[source.a]
+type = "sql"
+
+[source.b]
+type = "csv"
+
+[source.c]
+type = "json"
+
+[confluence.d]
+type = "inner_join"
+from = [ "a", "b" ]
+join = [
+  { name = "a", key = "user_id" },
+  { name = "b", key = "id" }
+]
+
+[flow.e]
+type = "filter_column"
+from = "d"
+
+[confluence.f]
+type = "inner_join"
+from = [
+  { name = "e", key = "user_id" },
+  { name = "c", key = "id" }
+]
+
+[branch.g_h_i]
+type = "column"
+from = "f"
+to = [
+  { name = "g", columns = [ "id", "name" ] },
+  { name = "h", columns = [ "address" ] },
+  { name = "i", columns = [ "age" ] }
+]
+
+[flow.j]
+type = "filter_row"
+from = "g"
+
+[source.k]
+type = "xml"
+
+[confluence.l]
+type = "outer_join"
+from = [ "i", "k" ]
+join = [
+  { name = "i", key = "user_id" },
+  { name = "k", key = "id" }
+]
+
+[sink.m]
+type = "json"
+from = "j"
+
+[sink.n]
+type = "csv"
+from = "h"
+
+[sink.o]
+type = "sql"
+from = "k"

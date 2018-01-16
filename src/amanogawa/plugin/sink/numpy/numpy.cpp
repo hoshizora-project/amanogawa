@@ -13,14 +13,15 @@ struct SinkNumpyPlugin : SinkPlugin {
   std::string plugin_name() const override { return "numpy"; }
   const logger_t logger = get_logger(SinkPlugin::plugin_full_name());
 
-  explicit SinkNumpyPlugin(const std::string &id, const config_t &config)
-      : SinkPlugin(id, config) {}
+  explicit SinkNumpyPlugin(const std::string &id, const std::string &from,
+                           const config_t &config)
+      : SinkPlugin(id, from, config) {}
 
   void *drain(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("drain");
 
     std::vector<int64_t> indices;
-    const auto cols = plugin_config->get_array_of<std::string>("columns");
+    const auto cols = config->get_array_of<std::string>("columns");
     for (const auto &col : *cols) {
       indices.emplace_back(table->schema()->GetFieldIndex(col));
     }
@@ -49,8 +50,9 @@ struct SinkNumpyPlugin : SinkPlugin {
 };
 
 __attribute__((visibility("default"))) extern "C" get_sink_plugin_return_t
-get_sink_plugin(const Config &config) {
-  return std::make_unique<SinkNumpyPlugin>(config);
+get_sink_plugin(const std::string &id, const std::string &from,
+                const config_t &config) {
+  return std::make_unique<SinkNumpyPlugin>(id, from, config);
 }
 } // namespace numpy
 } // namespace sink

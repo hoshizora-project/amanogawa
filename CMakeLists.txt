@@ -31,6 +31,9 @@ add_subdirectory(src/pybind11)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/arrow/cpp/cmake_modules)
 find_package(NumPy REQUIRED)
 
+# python
+find_package(PythonLibsNew REQUIRED)
+
 ## arrow
 find_library(LIB_ARROW NAMES arrow PATHS src/arrow/cpp/build/debug)
 find_library(LIB_ARROW_PYTHON NAMES arrow_python PATHS src/arrow/cpp/build/debug)
@@ -73,7 +76,7 @@ target_link_libraries(${AMANOGAWA_PLUGIN_SINK_FILE} ${LIB_ARROW})
 ### numpy
 set(AMANOGAWA_PLUGIN_SINK_NUMPY sink_numpy)
 pybind11_add_module(${AMANOGAWA_PLUGIN_SINK_NUMPY} SHARED src/amanogawa/plugin/sink/numpy/numpy.cpp)
-target_link_libraries(${AMANOGAWA_PLUGIN_SINK_NUMPY} ${LIB_ARROW} ${LIB_ARROW_PYTHON})
+target_link_libraries(${AMANOGAWA_PLUGIN_SINK_NUMPY} ${LIB_ARROW} ${LIB_ARROW_PYTHON} ${PYTHON_LIBRARIES})
 
 set_target_properties(
         ${AMANOGAWA_PLUGIN_SOURCE_FILE}

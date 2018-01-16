@@ -9,8 +9,9 @@ struct FlowFilterPlugin : FlowPlugin {
   std::string plugin_name() const override { return "filter"; }
   const logger_t logger = get_logger(FlowPlugin::plugin_full_name());
 
-  explicit FlowFilterPlugin(const std::string &id, const config_t &config)
-      : FlowPlugin(id, config) {}
+  explicit FlowFilterPlugin(const std::string &id, const std::string &from,
+                            const config_t &config)
+      : FlowPlugin(id, from, config) {}
 
   std::shared_ptr<arrow::Table>
   flow(const std::shared_ptr<arrow::Table> &data) const override {
@@ -19,8 +20,9 @@ struct FlowFilterPlugin : FlowPlugin {
 };
 
 __attribute__((visibility("default"))) extern "C" get_flow_plugin_return_t
-get_flow_plugin(const Config &config) {
-  return std::make_unique<FlowFilterPlugin>(config);
+get_flow_plugin(const std::string &id, const std::string &from,
+                const config_t &config) {
+  return std::make_unique<FlowFilterPlugin>(id, from, config);
 }
 } // namespace filter
 } // namespace flow
