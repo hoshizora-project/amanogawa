@@ -26,7 +26,7 @@ public:
     }
   }
 
-  static std::shared_ptr<DL> open(const std::string &lib_name,
+  static std::unique_ptr<DL> open(const std::string &lib_name,
                                   const bool is_full_lib_name = false,
                                   const int mode = default_mode) {
     const auto full_lib_name =
@@ -35,7 +35,7 @@ public:
 
     const auto handle = ::dlopen(full_lib_name.c_str(), mode);
     if (handle != nullptr) {
-      return std::shared_ptr<DL>(new DL(handle));
+      return std::unique_ptr<DL>(new DL(handle));
     } else {
       throw std::runtime_error("Failed to open " + full_lib_name + ". " +
                                ::dlerror());

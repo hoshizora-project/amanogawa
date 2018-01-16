@@ -28,7 +28,7 @@ struct SinkFilePlugin : SinkPlugin {
             *col->get_as<std::string>("name"),
             get_arrow_data_type(*col->get_as<std::string>("type"))));
       }
-      output_schema = arrow::schema(std::move(fields));
+      output_schema = arrow::schema(fields);
     }
   }
 

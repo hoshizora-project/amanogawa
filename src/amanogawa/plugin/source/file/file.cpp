@@ -24,7 +24,7 @@ struct SourceFilePlugin : SourcePlugin {
           *col->get_as<std::string>("name"),
           get_arrow_data_type(*col->get_as<std::string>("type"))));
     }
-    schema = arrow::schema(std::move(fields));
+    schema = arrow::schema(fields);
   }
 
   // TODO: Want to use https://issues.apache.org/jira/browse/ARROW-25
