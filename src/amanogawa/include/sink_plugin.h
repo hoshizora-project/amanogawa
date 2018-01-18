@@ -12,7 +12,7 @@ struct SinkPlugin : Plugin {
   std::string plugin_full_name() const override {
     return "sink_" + plugin_name();
   }
-  const std::string from;
+  const std::string from; // need???
 
   // TODO: Make `format` a standalone plugin
   const Config::table_t format_config;

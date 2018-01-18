@@ -12,7 +12,7 @@ struct FlowPlugin : Plugin {
   std::string plugin_full_name() const override {
     return "flow_" + plugin_name();
   }
-  const std::string from;
+  const std::string from; // need???
 
   virtual std::shared_ptr<arrow::Table>
   flow(const std::shared_ptr<arrow::Table> &) const = 0;

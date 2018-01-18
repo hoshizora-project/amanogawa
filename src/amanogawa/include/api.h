@@ -10,6 +10,7 @@
 #include "amanogawa/include/flow_plugin.h"
 #include "amanogawa/include/sink_plugin.h"
 #include "amanogawa/include/source_plugin.h"
+#include "amanogawa/include/branch_plugin.h"
 #include "amanogawa/include/util.h"
 // clang-format on
 

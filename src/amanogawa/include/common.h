@@ -34,6 +34,7 @@ namespace keyword {
 constexpr auto clazz = "clazz";
 constexpr auto type = "type";
 constexpr auto from = "from";
+constexpr auto to = "to";
 } // namespace keyword
 } // namespace string
 } // namespace amanogawa

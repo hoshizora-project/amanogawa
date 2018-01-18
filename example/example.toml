@@ -1,26 +1,42 @@
 [source.read_awesome_csv]
 type = "file"
-path = "original.csv"
+path = "kinmosa.csv"
 [source.read_awesome_csv.format]
 type = "csv"
 delimiter = ","
 skip_header = true
 columns = [
   { name = "id", type = "double" },
-  { name = "name", type = "string" }
+  { name = "name", type = "string" },
+  { name = "blood_type", type = "int" }
 ]
 
-[flow.construct_knn_graph]
-type = "to_graph"
+[flow.awesome_filter]
+type = "filter"
 from = "read_awesome_csv"
-[flow.construct_knn_graph.distance]
-type = "raw"
-column = "id"
 
-[sink.write_awesome_tsv]
+[branch.id_name_blood]
+type = "column"
+from = "awesome_filter"
+to = [
+  { name = "id_name", columns = [ "id", "name" ] },
+  { name = "blood", columns = [ "blood_type" ] }
+]
+
+[sink.write_id_name_tsv]
 type = "file"
-from = "construct_knn_graph"
-[sink.write_awesome_tsv.format]
+path = "result_id_name.tsv"
+from = "id_name"
+[sink.write_id_name_tsv.format]
 type = "csv"
 delimiter = "\t"
+columns = [] # all
+
+[sink.write_blood_csv]
+type = "file"
+path = "result_blood.csv"
+from = "blood"
+[sink.write_blood_csv.format]
+type = "csv"
+delimiter = ","
 columns = [] # all

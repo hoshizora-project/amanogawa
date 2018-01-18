@@ -38,7 +38,7 @@ struct Component {
 // represent DAG-ish
 struct FlowGraph {
   ~FlowGraph() {
-    for (auto &component : all) {
+    for (auto &component : all_wo_synonym) {
       delete component.second;
     }
   }
@@ -46,8 +46,10 @@ struct FlowGraph {
   // need to be destructed *AFTER* ~FlowGraph()
   std::vector<std::unique_ptr<core::DL>> libs;
 
-  std::map<std::string, Component *> all;
-  std::vector<std::pair<std::string, Component *>> sorted_all;
+  std::map<std::string, Component *> all; // [id (including synonym), component]
+  std::map<std::string, Component *> all_wo_synonym; // [id, component]
+  std::vector<std::pair<std::string, Component *>>
+      sorted_all_wo_synonym; // sorted [id, component]
 
   std::vector<Component *> sources;
   std::vector<Component *> flows;
@@ -57,7 +59,7 @@ struct FlowGraph {
 
   void topological_indexing() {
     std::unordered_set<Component *> indexed;
-    indexed.reserve(all.size());
+    indexed.reserve(all_wo_synonym.size());
     std::deque<Component *> starting_points{sources.begin(), sources.end()};
     uint32_t index = 0;
     while (!starting_points.empty()) {
@@ -73,7 +75,7 @@ struct FlowGraph {
       starting_points.pop_front();
     }
 
-    if (index != all.size()) {
+    if (index != all_wo_synonym.size()) {
       throw std::runtime_error("Not DAG");
     }
   }
@@ -98,7 +100,9 @@ struct FlowGraph {
         const auto id_table = class_table->get_table(id);
         const auto type = *id_table->get_as<std::string>(string::keyword::type);
 
-        if (!flow_graph->all.count(type)) {
+        // typeのpluginが初めてであればopen
+        // (多分今の実装は間違ってる)
+        if (!flow_graph->all_wo_synonym.count(type)) {
           flow_graph->libs.emplace_back(core::DL::open(clazz + "_" + type));
         }
 
@@ -111,6 +115,7 @@ struct FlowGraph {
                             std::static_pointer_cast<plugin::Plugin>(
                                 get_source_plugin(id, config)));
           flow_graph->all.emplace(id, component);
+          flow_graph->all_wo_synonym.emplace(id, component);
           flow_graph->sources.emplace_back(component);
         } else if (clazz == string::clazz::_flow) {
           const auto from =
@@ -123,9 +128,29 @@ struct FlowGraph {
                             std::static_pointer_cast<plugin::Plugin>(
                                 get_flow_plugin(id, from, config)));
           flow_graph->all.emplace(id, component);
+          flow_graph->all_wo_synonym.emplace(id, component);
           flow_graph->flows.emplace_back(component);
         } else if (clazz == string::clazz::_branch) {
+          const auto from =
+              *id_table->get_as<std::string>(string::keyword::from);
+          const auto get_branch_plugin =
+              flow_graph->libs.back()->sym<plugin::get_branch_plugin_t>(
+                  string::func::get_plugin);
+          const auto component =
+              new Component(id, type, clazz,
+                            std::static_pointer_cast<plugin::Plugin>(
+                                get_branch_plugin(id, from, config)));
+          flow_graph->all.emplace(id, component);
+          flow_graph->all_wo_synonym.emplace(id, component);
+          flow_graph->branches.emplace_back(component);
 
+          // Register branch synonym
+          const auto tos =
+              config->get_by_id(id)->get_table_array(string::keyword::to);
+          for (const auto &to : *tos) {
+            const auto synonym = *to->get_as<std::string>("name");
+            flow_graph->all.emplace(synonym, component);
+          }
         } else if (clazz == string::clazz::_confluence) {
 
         } else if (clazz == string::clazz::_sink) {
@@ -139,14 +164,16 @@ struct FlowGraph {
                             std::static_pointer_cast<plugin::Plugin>(
                                 get_sink_plugin(id, from, config)));
           flow_graph->all.emplace(id, component);
+          flow_graph->all_wo_synonym.emplace(id, component);
           flow_graph->sinks.emplace_back(component);
         } else {
         }
       }
     }
 
+    // `flow_graph->{prev,next}` has NOT been set here
     // Construct doubly linked flow graph
-    for (const auto &component_pair : flow_graph->all) {
+    for (const auto &component_pair : flow_graph->all_wo_synonym) {
       const auto component = component_pair.second;
       const auto clazz = component->clazz;
 
@@ -158,7 +185,11 @@ struct FlowGraph {
         prev_component->next.emplace_back(component);
         component->prev.emplace_back(prev_component);
       } else if (clazz == string::clazz::_branch) {
-
+        const auto branch_plugin =
+            std::dynamic_pointer_cast<plugin::BranchPlugin>(component->plugin);
+        const auto prev_component = flow_graph->all[branch_plugin->from];
+        prev_component->next.emplace_back(component);
+        component->prev.emplace_back(prev_component);
       } else if (clazz == string::clazz::_confluence) {
 
       } else if (clazz == string::clazz::_sink) {
@@ -173,14 +204,16 @@ struct FlowGraph {
 
     // Set all dependencies
     flow_graph->topological_indexing();
-    std::copy(flow_graph->all.begin(), flow_graph->all.end(),
-              std::back_inserter(flow_graph->sorted_all));
-    std::sort(flow_graph->sorted_all.begin(), flow_graph->sorted_all.end(),
+    std::copy(flow_graph->all_wo_synonym.begin(),
+              flow_graph->all_wo_synonym.end(),
+              std::back_inserter(flow_graph->sorted_all_wo_synonym));
+    std::sort(flow_graph->sorted_all_wo_synonym.begin(),
+              flow_graph->sorted_all_wo_synonym.end(),
               [](const auto &l, const auto &r) {
                 return l.second->index < r.second->index;
               });
 
-    for (const auto &component_pair : flow_graph->sorted_all) {
+    for (const auto &component_pair : flow_graph->sorted_all_wo_synonym) {
       const auto component = component_pair.second;
       const auto clazz = component->clazz;
 
@@ -192,7 +225,11 @@ struct FlowGraph {
         std::copy(prev_component->deps.begin(), prev_component->deps.end(),
                   std::inserter(component->deps, component->deps.end()));
       } else if (clazz == string::clazz::_branch) {
-
+        const auto prev_component =
+            component->prev.front(); // branch has only 1 prev component
+        component->deps.emplace(prev_component);
+        std::copy(prev_component->deps.begin(), prev_component->deps.end(),
+                  std::inserter(component->deps, component->deps.end()));
       } else if (clazz == string::clazz::_confluence) {
 
       } else if (clazz == string::clazz::_sink) {
