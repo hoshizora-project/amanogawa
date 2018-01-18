@@ -42,7 +42,7 @@ struct SinkFilePlugin : SinkPlugin {
 
     const auto file_name = *config->get_as<std::string>("path");
     std::ofstream fs(file_name);
-    const auto delimiter = *config->get_as<std::string>("delimiter");
+    const auto delimiter = *format_config->get_as<std::string>("delimiter");
     text::csv::csv_ostream csv_os(fs, delimiter[0]);
 
     const auto write_header = config->get_as<bool>("write_header");
