@@ -25,10 +25,10 @@ struct SinkPlugin : Plugin {
         format_config(this->config->get_table("format")) {}
 };
 
-using get_sink_plugin_return_t = std::unique_ptr<SinkPlugin>;
-using get_sink_plugin_t = get_sink_plugin_return_t (*)(const std::string &,
-                                                       const std::string &,
-                                                       const config_t &);
+using sink_plugin_t = std::shared_ptr<SinkPlugin>;
+using get_sink_plugin_t = sink_plugin_t (*)(const std::string &,
+                                            const std::string &,
+                                            const config_t &);
 } // namespace plugin
 } // namespace amanogawa
 

@@ -22,10 +22,10 @@ struct FlowPlugin : Plugin {
       : Plugin(id, config), from(from) {}
 };
 
-using get_flow_plugin_return_t = std::unique_ptr<FlowPlugin>;
-using get_flow_plugin_t = get_flow_plugin_return_t (*)(const std::string &,
-                                                       const std::string &,
-                                                       const config_t &);
+using flow_plugin_t = std::shared_ptr<FlowPlugin>;
+using get_flow_plugin_t = flow_plugin_t (*)(const std::string &,
+                                            const std::string &,
+                                            const config_t &);
 } // namespace plugin
 } // namespace amanogawa
 

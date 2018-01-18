@@ -87,7 +87,7 @@ struct SinkFilePlugin : SinkPlugin {
   }
 };
 
-__attribute__((visibility("default"))) extern "C" get_sink_plugin_return_t
+__attribute__((visibility("default"))) extern "C" sink_plugin_t
 get_plugin(const std::string &id, const std::string &from,
            const config_t &config) {
   return std::make_unique<SinkFilePlugin>(id, from, config);

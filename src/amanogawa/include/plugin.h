@@ -17,6 +17,8 @@ struct Plugin {
   Plugin(const std::string &id, const config_t &config)
       : id(id), root_config(config), config(root_config->get_by_id(id)) {}
 };
+
+using plugin_t = std::shared_ptr<Plugin>;
 } // namespace plugin
 } // namespace amanogawa
 

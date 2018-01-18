@@ -23,49 +23,6 @@ struct Config {
     return std::make_shared<Config>(toml::parse_file(file_name));
   }
 
-  // tiny helpers
-  // [class, [type, [id, from]]]
-  using plugin_meta_t = std::unordered_map<
-      std::string,
-      std::unordered_map<
-          std::string,
-          std::vector<std::pair<std::string, std::vector<std::string>>>>>;
-  plugin_meta_t read_plugins() const {
-    plugin_meta_t result;
-    const auto clazzes = table->get_keys();
-    for (const auto &clazz : clazzes) {
-      std::unordered_map<
-          std::string,
-          std::vector<std::pair<std::string, std::vector<std::string>>>>
-          each_plugin_type;
-      const auto class_table = table->get_table(clazz);
-      const auto ids = class_table->get_keys();
-      for (const auto &id : ids) {
-        const auto id_table = class_table->get_table(id);
-        const auto type = *id_table->get_as<std::string>(string::keyword::type);
-        const auto from =
-            clazz == string::clazz::_source
-                ? std::vector<std::string>{}
-                : clazz == string::clazz::_flow
-                      ? std::vector<std::string>{*id_table->get_as<std::string>(
-                            string::keyword::from)}
-                      : clazz == string::clazz::_sink
-                            ? std::vector<std::string>{*id_table->get_as<
-                                  std::string>(string::keyword::from)}
-                            : std::vector<std::string>{};
-        const auto pair = std::make_pair(id, from);
-        if (each_plugin_type.count(type)) {
-          each_plugin_type[type].emplace_back(pair);
-        } else {
-          std::vector<std::pair<std::string, std::vector<std::string>>>
-              id_list = {pair};
-          each_plugin_type.emplace(type, id_list);
-        }
-      }
-      result.emplace(clazz, each_plugin_type);
-    }
-    return result;
-  }
   table_t get_by_id(const std::string &id) const {
     const auto clazz_keys = table->get_keys();
     for (const auto &clazz_key : clazz_keys) {

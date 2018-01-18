@@ -22,10 +22,9 @@ struct SourcePlugin : Plugin {
       : Plugin(id, config), format_config(this->config->get_table("format")) {}
 };
 
-using get_source_plugin_return_t = std::unique_ptr<SourcePlugin>;
-using get_source_plugin_t = get_source_plugin_return_t (*)(const std::string &,
-
-                                                           const config_t &);
+using source_plugin_t = std::shared_ptr<SourcePlugin>;
+using get_source_plugin_t = source_plugin_t (*)(const std::string &,
+                                                const config_t &);
 } // namespace plugin
 } // namespace amanogawa
 

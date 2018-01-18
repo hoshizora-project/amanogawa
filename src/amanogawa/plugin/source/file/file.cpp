@@ -93,7 +93,7 @@ struct SourceFilePlugin : SourcePlugin {
   }
 };
 
-__attribute__((visibility("default"))) extern "C" get_source_plugin_return_t
+__attribute__((visibility("default"))) extern "C" source_plugin_t
 get_plugin(const std::string &id, const config_t &config) {
   return std::make_unique<SourceFilePlugin>(id, config);
 }
