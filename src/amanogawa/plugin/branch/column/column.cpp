@@ -5,6 +5,7 @@
 #include <arrow/api.h>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace amanogawa {
@@ -19,22 +20,24 @@ struct BranchColumnPlugin : BranchPlugin {
                               const config_t &config)
       : BranchPlugin(id, from, config) {}
 
-  std::shared_ptr<std::vector<std::shared_ptr<arrow::Table>>>
+  std::shared_ptr<
+      std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>
   branch(const std::shared_ptr<arrow::Table> &table) const override {
-    const auto branch_strategy = config->get_table_array(string::keyword::to);
-    auto tables =
-        std::make_shared<std::vector<std::shared_ptr<arrow::Table>>>();
-    for (const auto &twig : *branch_strategy) {
+    const auto branches = config->get_table_array(string::keyword::to);
+    auto tables = std::make_shared<
+        std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>();
+    for (const auto &branch : *branches) {
       std::vector<std::shared_ptr<arrow::Field>> fields;
       std::vector<std::shared_ptr<arrow::Column>> columns;
-      const auto col_names = *twig->get_array_of<std::string>("columns");
+      const auto col_names = *branch->get_array_of<std::string>("columns");
       for (const auto &col_name : col_names) {
         fields.emplace_back(table->schema()->GetFieldByName(col_name));
         columns.emplace_back(
             table->column(table->schema()->GetFieldIndex(col_name)));
       }
       const auto schema = arrow::schema(fields);
-      tables->emplace_back(arrow::Table::Make(schema, columns));
+      tables->emplace(*branch->get_as<std::string>("name"),
+                      arrow::Table::Make(schema, columns));
     }
 
     return tables;

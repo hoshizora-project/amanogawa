@@ -4,7 +4,7 @@
 #include "amanogawa/include/api.h"
 #include <arrow/api.h>
 #include <string>
-#include <vector>
+#include <unordered_map>
 
 namespace amanogawa {
 namespace plugin {
@@ -14,7 +14,8 @@ struct BranchPlugin : Plugin {
   }
   const std::string from; // need???
 
-  virtual std::shared_ptr<std::vector<std::shared_ptr<arrow::Table>>>
+  virtual std::shared_ptr<
+      std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>
   branch(const std::shared_ptr<arrow::Table> &) const = 0;
 
   BranchPlugin(const std::string &id, const std::string &from,
