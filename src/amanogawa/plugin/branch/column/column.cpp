@@ -29,14 +29,15 @@ struct BranchColumnPlugin : BranchPlugin {
     for (const auto &branch : *branches) {
       std::vector<std::shared_ptr<arrow::Field>> fields;
       std::vector<std::shared_ptr<arrow::Column>> columns;
-      const auto col_names = *branch->get_array_of<std::string>("columns");
+      const auto col_names =
+          *branch->get_array_of<std::string>(string::keyword::columns);
       for (const auto &col_name : col_names) {
         fields.emplace_back(table->schema()->GetFieldByName(col_name));
         columns.emplace_back(
             table->column(table->schema()->GetFieldIndex(col_name)));
       }
       const auto schema = arrow::schema(fields);
-      tables->emplace(*branch->get_as<std::string>("name"),
+      tables->emplace(*branch->get_as<std::string>(string::keyword::name),
                       arrow::Table::Make(schema, columns));
     }
 

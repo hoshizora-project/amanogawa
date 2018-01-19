@@ -20,13 +20,14 @@ struct SinkFilePlugin : SinkPlugin {
                           const config_t &config)
       : SinkPlugin(id, from, config) {
     // FIXME: Bug in cpptoml; if array of tables is empty, return nullptr
-    const auto cols = format_config->get_table_array("columns");
+    const auto cols = format_config->get_table_array(string::keyword::columns);
     if (cols != nullptr) {
       std::vector<std::shared_ptr<arrow::Field>> fields;
       for (const auto &col : *cols) {
         fields.emplace_back(std::make_shared<arrow::Field>(
-            *col->get_as<std::string>("name"),
-            get_arrow_data_type(*col->get_as<std::string>("type"))));
+            *col->get_as<std::string>(string::keyword::name),
+            get_arrow_data_type(
+                *col->get_as<std::string>(string::keyword::type))));
       }
       output_schema = arrow::schema(fields);
     }
@@ -53,6 +54,7 @@ struct SinkFilePlugin : SinkPlugin {
       csv_os << text::csv::endl;
     }
 
+    // FIXME: if chunk.size > 1 then invalid, invert loops?
     for (size_t i = 0, end = table->num_rows(); i < end; ++i) {
       for (const auto &field : output_fields) {
         auto field_name = field->name();

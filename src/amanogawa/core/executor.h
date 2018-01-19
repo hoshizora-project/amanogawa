@@ -26,19 +26,19 @@ void *execute(const config_t &config) {
     const auto id = component_pair.first;
     const auto component = component_pair.second;
 
-    if (component->clazz == string::clazz::_source) {
+    if (component->clazz == string::clazz::source) {
       const auto plugin = plugin::as_source(component->plugin);
       data_slot[id].emplace(id, plugin->spring());
 
       logger->info("slotted: ({}) as ({})", id, id);
-    } else if (component->clazz == string::clazz::_flow) {
+    } else if (component->clazz == string::clazz::flow) {
       const auto plugin = plugin::as_flow(component->plugin);
       // `component->prev.at(0)`: flow has only 1 prev component
       data_slot[id].emplace(
           id, plugin->flow(data_slot[component->prev.at(0)->id][plugin->from]));
 
       logger->info("slotted: ({}) as ({})", id, id);
-    } else if (component->clazz == string::clazz::_branch) {
+    } else if (component->clazz == string::clazz::branch) {
       const auto plugin = plugin::as_branch(component->plugin);
       // `component->prev.at(0)`: branch has only 1 prev component
       const auto results =
@@ -48,7 +48,7 @@ void *execute(const config_t &config) {
 
         logger->info("slotted: ({}) as ({})", id, result.first);
       }
-    } else if (component->clazz == string::clazz::_confluence) {
+    } else if (component->clazz == string::clazz::confluence) {
       const auto plugin = plugin::as_confluence(component->plugin);
       const auto result = plugin->join(
           data_slot[component->prev.at(0)->id][plugin->from_left],
@@ -56,7 +56,7 @@ void *execute(const config_t &config) {
       data_slot[id].emplace(id, result);
 
       logger->info("slotted: ({}) as ({})", id, id);
-    } else if (component->clazz == string::clazz::_sink) {
+    } else if (component->clazz == string::clazz::sink) {
       const auto plugin = plugin::as_sink(component->plugin);
       // `component->prev.at(0)`: sink has only 1 prev component
       plugin->drain(data_slot[component->prev.at(0)->id][plugin->from]);

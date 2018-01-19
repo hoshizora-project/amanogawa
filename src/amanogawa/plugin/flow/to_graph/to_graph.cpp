@@ -30,8 +30,9 @@ struct FlowToGraphPlugin : FlowPlugin {
     std::vector<std::shared_ptr<arrow::Field>> fields;
     for (const auto &col : *cols) {
       fields.emplace_back(
-          arrow::field(*(col->get_as<std::string>("name")),
-                       get_arrow_data_type(*col->get_as<std::string>("type"))));
+          arrow::field(*(col->get_as<std::string>(string::keyword::name)),
+                       get_arrow_data_type(
+                           *col->get_as<std::string>(string::keyword::type))));
     }
 
     const auto num_feats = fields.size() - 1; // -1 means label

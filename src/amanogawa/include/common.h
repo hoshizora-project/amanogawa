@@ -4,26 +4,11 @@
 namespace amanogawa {
 namespace string {
 namespace clazz {
-constexpr auto _source = "source";
-namespace source {
-constexpr auto spring = "spring";
-}
-constexpr auto _flow = "flow";
-namespace flow {
+constexpr auto source = "source";
 constexpr auto flow = "flow";
-}
-constexpr auto _branch = "branch";
-namespace branch {
 constexpr auto branch = "branch";
-}
-constexpr auto _confluence = "confluence";
-namespace confluence {
-constexpr auto confluent = "confluent";
-}
-constexpr auto _sink = "sink";
-namespace sink {
-constexpr auto drain = "drain";
-}
+constexpr auto confluence = "confluence";
+constexpr auto sink = "sink";
 } // namespace clazz
 
 namespace func {
@@ -35,6 +20,8 @@ constexpr auto clazz = "clazz";
 constexpr auto type = "type";
 constexpr auto from = "from";
 constexpr auto to = "to";
+constexpr auto name = "name";
+constexpr auto columns = "columns";
 } // namespace keyword
 } // namespace string
 } // namespace amanogawa

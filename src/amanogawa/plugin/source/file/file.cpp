@@ -16,13 +16,15 @@ struct SourceFilePlugin : SourcePlugin {
   // TODO: Validate config
   explicit SourceFilePlugin(const std::string &id, const config_t &config)
       : SourcePlugin(id, config) {
-    const auto format = *format_config->get_as<std::string>("type");
-    const auto cols = format_config->get_table_array("columns");
+    const auto format =
+        *format_config->get_as<std::string>(string::keyword::type);
+    const auto cols = format_config->get_table_array(string::keyword::columns);
     std::vector<std::shared_ptr<arrow::Field>> fields;
     for (const auto &col : *cols) {
       fields.emplace_back(std::make_shared<arrow::Field>(
-          *col->get_as<std::string>("name"),
-          get_arrow_data_type(*col->get_as<std::string>("type"))));
+          *col->get_as<std::string>(string::keyword::name),
+          get_arrow_data_type(
+              *col->get_as<std::string>(string::keyword::type))));
     }
     schema = arrow::schema(fields);
   }

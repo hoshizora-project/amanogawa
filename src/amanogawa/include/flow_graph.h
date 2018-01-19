@@ -88,8 +88,8 @@ struct FlowGraph {
     auto flow_graph = std::make_unique<FlowGraph>();
 
     const std::vector<std::string> clazzes = {
-        string::clazz::_source, string::clazz::_flow, string::clazz::_branch,
-        string::clazz::_confluence, string::clazz::_sink};
+        string::clazz::source, string::clazz::flow, string::clazz::branch,
+        string::clazz::confluence, string::clazz::sink};
 
     // Instantiating components
     for (const auto &clazz : clazzes) {
@@ -107,7 +107,7 @@ struct FlowGraph {
           flow_graph->libs.emplace(plugin_type, core::DL::open(plugin_type));
         }
 
-        if (clazz == string::clazz::_source) {
+        if (clazz == string::clazz::source) {
           const auto get_source_plugin =
               flow_graph->libs.at(plugin_type)
                   ->sym<plugin::get_source_plugin_t>(string::func::get_plugin);
@@ -118,7 +118,7 @@ struct FlowGraph {
           flow_graph->all.emplace(id, component);
           flow_graph->all_wo_synonym.emplace(id, component);
           flow_graph->sources.emplace_back(component);
-        } else if (clazz == string::clazz::_flow) {
+        } else if (clazz == string::clazz::flow) {
           const auto from =
               *id_table->get_as<std::string>(string::keyword::from);
           const auto get_flow_plugin =
@@ -131,7 +131,7 @@ struct FlowGraph {
           flow_graph->all.emplace(id, component);
           flow_graph->all_wo_synonym.emplace(id, component);
           flow_graph->flows.emplace_back(component);
-        } else if (clazz == string::clazz::_branch) {
+        } else if (clazz == string::clazz::branch) {
           const auto from =
               *id_table->get_as<std::string>(string::keyword::from);
           const auto get_branch_plugin =
@@ -149,15 +149,17 @@ struct FlowGraph {
           const auto tos =
               config->get_by_id(id)->get_table_array(string::keyword::to);
           for (const auto &to : *tos) {
-            const auto synonym = *to->get_as<std::string>("name");
+            const auto synonym =
+                *to->get_as<std::string>(string::keyword::name);
             flow_graph->all.emplace(synonym, component);
           }
-        } else if (clazz == string::clazz::_confluence) {
+        } else if (clazz == string::clazz::confluence) {
           const auto froms = id_table->get_table_array(string::keyword::from);
           const auto from_left =
-              *(*froms->begin())->get_as<std::string>("name");
+              *(*froms->begin())->get_as<std::string>(string::keyword::name);
           const auto from_right =
-              *(*(froms->begin() + 1))->get_as<std::string>("name");
+              *(*(froms->begin() + 1))
+                   ->get_as<std::string>(string::keyword::name);
           const auto get_confluence_plugin =
               flow_graph->libs.at(plugin_type)
                   ->sym<plugin::get_confluence_plugin_t>(
@@ -169,7 +171,7 @@ struct FlowGraph {
           flow_graph->all.emplace(id, component);
           flow_graph->all_wo_synonym.emplace(id, component);
           flow_graph->confluences.emplace_back(component);
-        } else if (clazz == string::clazz::_sink) {
+        } else if (clazz == string::clazz::sink) {
           const auto from =
               *id_table->get_as<std::string>(string::keyword::from);
           const auto get_sink_plugin =
@@ -202,22 +204,22 @@ struct FlowGraph {
       const auto component = component_pair.second;
       const auto clazz = component->clazz;
 
-      if (clazz == string::clazz::_source) {
-      } else if (clazz == string::clazz::_flow) {
+      if (clazz == string::clazz::source) {
+      } else if (clazz == string::clazz::flow) {
         const auto plugin = plugin::as_flow(component->plugin);
         const auto prev_component = flow_graph->all[plugin->from];
         prev_component->next.emplace_back(component);
         component->prev.emplace_back(prev_component);
 
         log_edge(prev_component->id, plugin->from, component->id);
-      } else if (clazz == string::clazz::_branch) {
+      } else if (clazz == string::clazz::branch) {
         const auto plugin = plugin::as_branch(component->plugin);
         const auto prev_component = flow_graph->all[plugin->from];
         prev_component->next.emplace_back(component);
         component->prev.emplace_back(prev_component);
 
         log_edge(prev_component->id, plugin->from, component->id);
-      } else if (clazz == string::clazz::_confluence) {
+      } else if (clazz == string::clazz::confluence) {
         const auto plugin = plugin::as_confluence(component->plugin);
         const std::vector<Component *> prev_components = {
             flow_graph->all[plugin->from_left],
@@ -229,7 +231,7 @@ struct FlowGraph {
 
         log_edge(prev_components.at(0)->id, plugin->from_left, component->id);
         log_edge(prev_components.at(1)->id, plugin->from_right, component->id);
-      } else if (clazz == string::clazz::_sink) {
+      } else if (clazz == string::clazz::sink) {
         const auto plugin = plugin::as_sink(component->plugin);
         const auto prev_component = flow_graph->all[plugin->from];
         prev_component->next.emplace_back(component);
@@ -255,20 +257,20 @@ struct FlowGraph {
       const auto component = component_pair.second;
       const auto clazz = component->clazz;
 
-      if (clazz == string::clazz::_source) {
-      } else if (clazz == string::clazz::_flow) {
+      if (clazz == string::clazz::source) {
+      } else if (clazz == string::clazz::flow) {
         const auto prev_component =
             component->prev.at(0); // source has only 1 prev component
         component->deps.emplace(prev_component);
         std::copy(prev_component->deps.begin(), prev_component->deps.end(),
                   std::inserter(component->deps, component->deps.end()));
-      } else if (clazz == string::clazz::_branch) {
+      } else if (clazz == string::clazz::branch) {
         const auto prev_component =
             component->prev.at(0); // branch has only 1 prev component
         component->deps.emplace(prev_component);
         std::copy(prev_component->deps.begin(), prev_component->deps.end(),
                   std::inserter(component->deps, component->deps.end()));
-      } else if (clazz == string::clazz::_confluence) {
+      } else if (clazz == string::clazz::confluence) {
         const auto prev_components = component->prev;
         assert(prev_components.size() == 2);
         for (const auto prev_component : prev_components) {
@@ -276,7 +278,7 @@ struct FlowGraph {
           std::copy(prev_component->deps.begin(), prev_component->deps.end(),
                     std::inserter(component->deps, component->deps.end()));
         }
-      } else if (clazz == string::clazz::_sink) {
+      } else if (clazz == string::clazz::sink) {
         const auto prev_component =
             component->prev.at(0); // sink has only 1 prev component
         component->deps.emplace(prev_component);
