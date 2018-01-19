@@ -3,6 +3,7 @@
 
 #include "amanogawa/include/api.h"
 #include <arrow/api.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,9 @@ using sink_plugin_t = std::shared_ptr<SinkPlugin>;
 using get_sink_plugin_t = sink_plugin_t (*)(const std::string &,
                                             const std::string &,
                                             const config_t &);
+sink_plugin_t as_sink(const plugin_t &plugin) {
+  return std::dynamic_pointer_cast<SinkPlugin>(plugin);
+}
 } // namespace plugin
 } // namespace amanogawa
 

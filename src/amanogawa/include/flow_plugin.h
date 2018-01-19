@@ -3,6 +3,7 @@
 
 #include "amanogawa/include/api.h"
 #include <arrow/api.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,9 @@ using flow_plugin_t = std::shared_ptr<FlowPlugin>;
 using get_flow_plugin_t = flow_plugin_t (*)(const std::string &,
                                             const std::string &,
                                             const config_t &);
+flow_plugin_t as_flow(const plugin_t &plugin) {
+  return std::dynamic_pointer_cast<FlowPlugin>(plugin);
+}
 } // namespace plugin
 } // namespace amanogawa
 

@@ -28,6 +28,9 @@ using branch_plugin_t = std::shared_ptr<BranchPlugin>;
 using get_branch_plugin_t = branch_plugin_t (*)(const std::string &,
                                                 const std::string &,
                                                 const config_t &);
+branch_plugin_t as_branch(const plugin_t &plugin) {
+  return std::dynamic_pointer_cast<BranchPlugin>(plugin);
+}
 } // namespace plugin
 } // namespace amanogawa
 

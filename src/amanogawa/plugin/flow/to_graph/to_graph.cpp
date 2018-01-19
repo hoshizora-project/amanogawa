@@ -52,7 +52,7 @@ struct FlowToGraphPlugin : FlowPlugin {
         const auto col = table->column(field_idx);
         const auto chunk = col->data()->chunk(0);
         const auto float64_chunk =
-            std::dynamic_pointer_cast<arrow::DoubleArray>(chunk);
+            std::static_pointer_cast<arrow::DoubleArray>(chunk);
         row[j - 1] = float64_chunk->Value(i);
       }
       rows[i] = row;

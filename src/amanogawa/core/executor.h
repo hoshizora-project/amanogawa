@@ -27,26 +27,22 @@ void *execute(const config_t &config) {
     const auto component = component_pair.second;
 
     if (component->clazz == string::clazz::_source) {
-      const auto plugin =
-          std::dynamic_pointer_cast<plugin::SourcePlugin>(component->plugin);
+      const auto plugin = plugin::as_source(component->plugin);
       data_slot[id].emplace(id, plugin->spring());
 
       logger->info("slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::_flow) {
-      const auto plugin =
-          std::dynamic_pointer_cast<plugin::FlowPlugin>(component->plugin);
-      // `component->prev.front()`: flow has only 1 prev component
+      const auto plugin = plugin::as_flow(component->plugin);
+      // `component->prev.at(0)`: flow has only 1 prev component
       data_slot[id].emplace(
-          id,
-          plugin->flow(data_slot[component->prev.front()->id][plugin->from]));
+          id, plugin->flow(data_slot[component->prev.at(0)->id][plugin->from]));
 
       logger->info("slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::_branch) {
-      const auto plugin =
-          std::dynamic_pointer_cast<plugin::BranchPlugin>(component->plugin);
-      // `component->prev.front()`: branch has only 1 prev component
+      const auto plugin = plugin::as_branch(component->plugin);
+      // `component->prev.at(0)`: branch has only 1 prev component
       const auto results =
-          plugin->branch(data_slot[component->prev.front()->id][plugin->from]);
+          plugin->branch(data_slot[component->prev.at(0)->id][plugin->from]);
       for (const auto &result : *results) {
         data_slot[id].emplace(result);
 
@@ -61,10 +57,9 @@ void *execute(const config_t &config) {
 
       logger->info("slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::_sink) {
-      const auto plugin =
-          std::dynamic_pointer_cast<plugin::SinkPlugin>(component->plugin);
-      // `component->prev.front()`: sink has only 1 prev component
-      plugin->drain(data_slot[component->prev.front()->id][plugin->from]);
+      const auto plugin = plugin::as_sink(component->plugin);
+      // `component->prev.at(0)`: sink has only 1 prev component
+      plugin->drain(data_slot[component->prev.at(0)->id][plugin->from]);
     } else {
     }
   }

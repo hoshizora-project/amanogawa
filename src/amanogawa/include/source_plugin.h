@@ -3,6 +3,7 @@
 
 #include "amanogawa/include/api.h"
 #include <arrow/api.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,9 @@ struct SourcePlugin : Plugin {
 using source_plugin_t = std::shared_ptr<SourcePlugin>;
 using get_source_plugin_t = source_plugin_t (*)(const std::string &,
                                                 const config_t &);
+source_plugin_t as_source(const plugin_t &plugin) {
+  return std::dynamic_pointer_cast<SourcePlugin>(plugin);
+}
 } // namespace plugin
 } // namespace amanogawa
 

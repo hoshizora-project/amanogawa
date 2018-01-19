@@ -61,7 +61,7 @@ struct FlowGraph {
     std::deque<Component *> starting_points{sources.begin(), sources.end()};
     uint32_t index = 0;
     while (!starting_points.empty()) {
-      const auto starting_point = starting_points.front();
+      const auto starting_point = starting_points.at(0);
       starting_point->index = index++;
       for (const auto &next : starting_point->next) {
         if (next->prev.empty() // no incoming edge
@@ -204,45 +204,38 @@ struct FlowGraph {
 
       if (clazz == string::clazz::_source) {
       } else if (clazz == string::clazz::_flow) {
-        const auto flow_plugin =
-            std::dynamic_pointer_cast<plugin::FlowPlugin>(component->plugin);
-        const auto prev_component = flow_graph->all[flow_plugin->from];
+        const auto plugin = plugin::as_flow(component->plugin);
+        const auto prev_component = flow_graph->all[plugin->from];
         prev_component->next.emplace_back(component);
         component->prev.emplace_back(prev_component);
 
-        log_edge(prev_component->id, flow_plugin->from, component->id);
+        log_edge(prev_component->id, plugin->from, component->id);
       } else if (clazz == string::clazz::_branch) {
-        const auto branch_plugin =
-            std::dynamic_pointer_cast<plugin::BranchPlugin>(component->plugin);
-        const auto prev_component = flow_graph->all[branch_plugin->from];
+        const auto plugin = plugin::as_branch(component->plugin);
+        const auto prev_component = flow_graph->all[plugin->from];
         prev_component->next.emplace_back(component);
         component->prev.emplace_back(prev_component);
 
-        log_edge(prev_component->id, branch_plugin->from, component->id);
+        log_edge(prev_component->id, plugin->from, component->id);
       } else if (clazz == string::clazz::_confluence) {
-        const auto confluence_plugin =
-            std::dynamic_pointer_cast<plugin::ConfluencePlugin>(
-                component->plugin);
+        const auto plugin = plugin::as_confluence(component->plugin);
         const std::vector<Component *> prev_components = {
-            flow_graph->all[confluence_plugin->from_left],
-            flow_graph->all[confluence_plugin->from_right]};
+            flow_graph->all[plugin->from_left],
+            flow_graph->all[plugin->from_right]};
         for (const auto &prev_component : prev_components) {
           prev_component->next.emplace_back(component);
           component->prev.emplace_back(prev_component);
         }
 
-        log_edge(prev_components.at(0)->id, confluence_plugin->from_left,
-                 component->id);
-        log_edge(prev_components.at(1)->id, confluence_plugin->from_right,
-                 component->id);
+        log_edge(prev_components.at(0)->id, plugin->from_left, component->id);
+        log_edge(prev_components.at(1)->id, plugin->from_right, component->id);
       } else if (clazz == string::clazz::_sink) {
-        const auto sink_plugin =
-            std::dynamic_pointer_cast<plugin::SinkPlugin>(component->plugin);
-        const auto prev_component = flow_graph->all[sink_plugin->from];
+        const auto plugin = plugin::as_sink(component->plugin);
+        const auto prev_component = flow_graph->all[plugin->from];
         prev_component->next.emplace_back(component);
         component->prev.emplace_back(prev_component);
 
-        log_edge(prev_component->id, sink_plugin->from, component->id);
+        log_edge(prev_component->id, plugin->from, component->id);
       } else {
       }
     }
@@ -265,13 +258,13 @@ struct FlowGraph {
       if (clazz == string::clazz::_source) {
       } else if (clazz == string::clazz::_flow) {
         const auto prev_component =
-            component->prev.front(); // source has only 1 prev component
+            component->prev.at(0); // source has only 1 prev component
         component->deps.emplace(prev_component);
         std::copy(prev_component->deps.begin(), prev_component->deps.end(),
                   std::inserter(component->deps, component->deps.end()));
       } else if (clazz == string::clazz::_branch) {
         const auto prev_component =
-            component->prev.front(); // branch has only 1 prev component
+            component->prev.at(0); // branch has only 1 prev component
         component->deps.emplace(prev_component);
         std::copy(prev_component->deps.begin(), prev_component->deps.end(),
                   std::inserter(component->deps, component->deps.end()));
@@ -285,7 +278,7 @@ struct FlowGraph {
         }
       } else if (clazz == string::clazz::_sink) {
         const auto prev_component =
-            component->prev.front(); // sink has only 1 prev component
+            component->prev.at(0); // sink has only 1 prev component
         component->deps.emplace(prev_component);
         std::copy(prev_component->deps.begin(), prev_component->deps.end(),
                   std::inserter(component->deps, component->deps.end()));
