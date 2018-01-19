@@ -103,4 +103,3 @@ target_link_libraries(${AMANOGAWA_CLI} dl ${LIB_ARROW} ${LIB_ARROW_PYTHON} pybin
 set(AMANOGAWA amanogawa)
 pybind11_add_module(${AMANOGAWA} SHARED ${SOURCES} src/amanogawa/pybind.cpp)
 target_link_libraries(${AMANOGAWA} dl ${LIB_ARROW} ${LIB_ARROW_PYTHON})
-set_target_properties(${AMANOGAWA} PROPERTIES SUFFIX .${LIBS_EXT})
