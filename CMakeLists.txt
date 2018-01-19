@@ -72,6 +72,12 @@ set(AMANOGAWA_PLUGIN_BRANCH_COLUMN branch_column)
 add_library(${AMANOGAWA_PLUGIN_BRANCH_COLUMN} SHARED src/amanogawa/plugin/branch/column/column.cpp)
 target_link_libraries(${AMANOGAWA_PLUGIN_BRANCH_COLUMN} ${LIB_ARROW})
 
+## confluence
+### key
+set(AMANOGAWA_PLUGIN_CONFLUENCE_KEY confluence_key)
+add_library(${AMANOGAWA_PLUGIN_CONFLUENCE_KEY} SHARED src/amanogawa/plugin/confluence/key/key.cpp)
+target_link_libraries(${AMANOGAWA_PLUGIN_CONFLUENCE_KEY} ${LIB_ARROW})
+
 ## sink
 ### file
 set(AMANOGAWA_PLUGIN_SINK_FILE sink_file)
@@ -88,6 +94,7 @@ set_target_properties(
         ${AMANOGAWA_PLUGIN_FLOW_FILTER}
         ${AMANOGAWA_PLUGIN_FLOW_TO_GRAPH}
         ${AMANOGAWA_PLUGIN_BRANCH_COLUMN}
+        ${AMANOGAWA_PLUGIN_CONFLUENCE_KEY}
         ${AMANOGAWA_PLUGIN_SINK_FILE}
         ${AMANOGAWA_PLUGIN_SINK_NUMPY}
         PROPERTIES PREFIX lib SUFFIX .${LIBS_EXT})

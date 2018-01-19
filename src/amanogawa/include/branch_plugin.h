@@ -3,6 +3,7 @@
 
 #include "amanogawa/include/api.h"
 #include <arrow/api.h>
+#include <memory>
 #include <string>
 #include <unordered_map>
 

@@ -16,6 +16,8 @@ void *execute(const config_t &config) {
   const auto logger = get_logger("executor");
 
   const auto flow_graph = FlowGraph::make(config);
+
+  // [real id, [maybe synonym, data]]
   std::unordered_map<
       std::string,
       std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>
@@ -28,6 +30,8 @@ void *execute(const config_t &config) {
       const auto plugin =
           std::dynamic_pointer_cast<plugin::SourcePlugin>(component->plugin);
       data_slot[id].emplace(id, plugin->spring());
+
+      logger->info("slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::_flow) {
       const auto plugin =
           std::dynamic_pointer_cast<plugin::FlowPlugin>(component->plugin);
@@ -35,6 +39,8 @@ void *execute(const config_t &config) {
       data_slot[id].emplace(
           id,
           plugin->flow(data_slot[component->prev.front()->id][plugin->from]));
+
+      logger->info("slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::_branch) {
       const auto plugin =
           std::dynamic_pointer_cast<plugin::BranchPlugin>(component->plugin);
@@ -43,8 +49,17 @@ void *execute(const config_t &config) {
           plugin->branch(data_slot[component->prev.front()->id][plugin->from]);
       for (const auto &result : *results) {
         data_slot[id].emplace(result);
+
+        logger->info("slotted: ({}) as ({})", id, result.first);
       }
     } else if (component->clazz == string::clazz::_confluence) {
+      const auto plugin = plugin::as_confluence(component->plugin);
+      const auto result = plugin->join(
+          data_slot[component->prev.at(0)->id][plugin->from_left],
+          data_slot[component->prev.at(1)->id][plugin->from_right]);
+      data_slot[id].emplace(id, result);
+
+      logger->info("slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::_sink) {
       const auto plugin =
           std::dynamic_pointer_cast<plugin::SinkPlugin>(component->plugin);

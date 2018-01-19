@@ -23,6 +23,25 @@ to = [
   { name = "blood", columns = [ "blood_type" ] }
 ]
 
+[source.about_blood]
+type = "file"
+path = "blood.csv"
+[source.about_blood.format]
+type = "csv"
+delimiter = ","
+skip_header = true
+columns = [
+  { name = "id", type = "int" },
+  { name = "type_string", type = "string" }
+]
+
+[confluence.blood_type]
+type = "key"
+from = [
+  { name = "about_blood", key = "id" },
+  { name = "blood", key = "blood_type" }
+]
+
 [sink.write_id_name_tsv]
 type = "file"
 path = "result_id_name.tsv"
@@ -35,7 +54,7 @@ columns = [] # all
 [sink.write_blood_csv]
 type = "file"
 path = "result_blood.csv"
-from = "blood"
+from = "blood_type"
 [sink.write_blood_csv.format]
 type = "csv"
 delimiter = ","
