@@ -7,11 +7,12 @@ namespace confluence {
 namespace key {
 struct ConfluenceKeyPlugin : ConfluencePlugin {
   std::string plugin_name() const override { return "key"; }
-  const logger_t logger = get_logger(ConfluencePlugin::plugin_full_name());
 
   ConfluenceKeyPlugin(const std::string &id, const std::string &from_left,
                       const std::string &from_right, const config_t &config)
-      : ConfluencePlugin(id, from_left, from_right, config) {}
+      : ConfluencePlugin(id, from_left, from_right, config) {
+    init_logger();
+  }
 
   std::shared_ptr<arrow::Table>
   int32_join(const std::shared_ptr<arrow::Table> &left_table,
@@ -115,6 +116,8 @@ struct ConfluenceKeyPlugin : ConfluencePlugin {
   std::shared_ptr<arrow::Table>
   join(const std::shared_ptr<arrow::Table> &left_table,
        const std::shared_ptr<arrow::Table> &right_table) const override {
+    logger->info("join");
+
     const auto froms = config->get_table_array(string::keyword::from);
     // FIXME
     const auto left = *(*froms).begin();

@@ -18,6 +18,10 @@ static logger_t get_logger(const std::string &id) {
   return logger != nullptr ? logger : spdlog::stderr_color_mt(fqid);
 }
 
+static void drop_logger(const std::string &id) {
+  spdlog::drop("amanogawa@" + id);
+}
+
 // arrow
 static std::unordered_map<std::string, std::string> normalize_table = {
     {"int32", "int32"},    {"int", "int32"}, {"float64", "float64"},

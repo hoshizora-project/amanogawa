@@ -13,6 +13,10 @@
 namespace amanogawa {
 namespace core {
 void *execute(const config_t &config) {
+#ifdef SPDLOG_DEBUG_ON
+  spdlog::set_level(spdlog::level::debug); // should not be necessary...
+#endif
+
   const auto logger = get_logger("executor");
 
   const auto flow_graph = FlowGraph::make(config);
@@ -30,14 +34,14 @@ void *execute(const config_t &config) {
       const auto plugin = plugin::as_source(component->plugin);
       data_slot[id].emplace(id, plugin->spring());
 
-      logger->info("slotted: ({}) as ({})", id, id);
+      SPDLOG_DEBUG(logger, "slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::flow) {
       const auto plugin = plugin::as_flow(component->plugin);
       // `component->prev.at(0)`: flow has only 1 prev component
       data_slot[id].emplace(
           id, plugin->flow(data_slot[component->prev.at(0)->id][plugin->from]));
 
-      logger->info("slotted: ({}) as ({})", id, id);
+      SPDLOG_DEBUG(logger, "slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::branch) {
       const auto plugin = plugin::as_branch(component->plugin);
       // `component->prev.at(0)`: branch has only 1 prev component
@@ -46,7 +50,7 @@ void *execute(const config_t &config) {
       for (const auto &result : *results) {
         data_slot[id].emplace(result);
 
-        logger->info("slotted: ({}) as ({})", id, result.first);
+        SPDLOG_DEBUG(logger, "slotted: ({}) as ({})", id, result.first);
       }
     } else if (component->clazz == string::clazz::confluence) {
       const auto plugin = plugin::as_confluence(component->plugin);
@@ -55,7 +59,7 @@ void *execute(const config_t &config) {
           data_slot[component->prev.at(1)->id][plugin->from_right]);
       data_slot[id].emplace(id, result);
 
-      logger->info("slotted: ({}) as ({})", id, id);
+      SPDLOG_DEBUG(logger, "slotted: ({}) as ({})", id, id);
     } else if (component->clazz == string::clazz::sink) {
       const auto plugin = plugin::as_sink(component->plugin);
       // `component->prev.at(0)`: sink has only 1 prev component

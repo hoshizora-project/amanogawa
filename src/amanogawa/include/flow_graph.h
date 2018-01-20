@@ -192,9 +192,9 @@ struct FlowGraph {
     const auto log_edge = [&](const auto &from, const auto &from_synonym,
                               const auto to) {
       if (from == from_synonym) {
-        logger->info("{} -> {}", from, to);
+        SPDLOG_DEBUG(logger, "{} -> {}", from, to);
       } else {
-        logger->info("{} -> ({}) -> {}", from, from_synonym, to);
+        SPDLOG_DEBUG(logger, "{} -> ({}) -> {}", from, from_synonym, to);
       }
     };
 

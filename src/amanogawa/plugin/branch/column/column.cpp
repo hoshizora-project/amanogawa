@@ -14,15 +14,18 @@ namespace branch {
 namespace column {
 struct BranchColumnPlugin : BranchPlugin {
   std::string plugin_name() const override { return "column"; }
-  const logger_t logger = get_logger(BranchPlugin::plugin_full_name());
 
   explicit BranchColumnPlugin(const std::string &id, const std::string &from,
                               const config_t &config)
-      : BranchPlugin(id, from, config) {}
+      : BranchPlugin(id, from, config) {
+    init_logger();
+  }
 
   std::shared_ptr<
       std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>
   branch(const std::shared_ptr<arrow::Table> &table) const override {
+    logger->info("branch");
+
     const auto branches = config->get_table_array(string::keyword::to);
     auto tables = std::make_shared<
         std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>();

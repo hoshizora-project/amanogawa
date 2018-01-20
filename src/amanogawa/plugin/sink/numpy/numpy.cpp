@@ -11,11 +11,12 @@ namespace sink {
 namespace numpy {
 struct SinkNumpyPlugin : SinkPlugin {
   std::string plugin_name() const override { return "numpy"; }
-  const logger_t logger = get_logger(SinkPlugin::plugin_full_name());
 
   explicit SinkNumpyPlugin(const std::string &id, const std::string &from,
                            const config_t &config)
-      : SinkPlugin(id, from, config) {}
+      : SinkPlugin(id, from, config) {
+    init_logger();
+  }
 
   void *drain(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("drain");

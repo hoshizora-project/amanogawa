@@ -7,14 +7,17 @@ namespace flow {
 namespace filter {
 struct FlowFilterPlugin : FlowPlugin {
   std::string plugin_name() const override { return "filter"; }
-  const logger_t logger = get_logger(FlowPlugin::plugin_full_name());
 
   explicit FlowFilterPlugin(const std::string &id, const std::string &from,
                             const config_t &config)
-      : FlowPlugin(id, from, config) {}
+      : FlowPlugin(id, from, config) {
+    init_logger();
+  }
 
   std::shared_ptr<arrow::Table>
   flow(const std::shared_ptr<arrow::Table> &table) const override {
+    logger->info("flow");
+
     return table; // TMP: pass-through
   }
 };

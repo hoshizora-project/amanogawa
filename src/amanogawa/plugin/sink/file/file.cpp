@@ -14,13 +14,13 @@ namespace sink {
 namespace file {
 struct SinkFilePlugin : SinkPlugin {
   std::string plugin_name() const override { return "file"; }
-  const logger_t logger = get_logger(SinkPlugin::plugin_full_name());
-
   std::shared_ptr<arrow::Schema> output_schema;
 
   explicit SinkFilePlugin(const std::string &id, const std::string &from,
                           const config_t &config)
       : SinkPlugin(id, from, config) {
+    init_logger();
+
     // FIXME: Bug in cpptoml; if array of tables is empty, return nullptr
     const auto cols = format_config->get_table_array(string::keyword::columns);
     if (cols != nullptr) {

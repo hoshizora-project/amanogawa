@@ -9,13 +9,14 @@ namespace file {
 
 struct SourceFilePlugin : SourcePlugin {
   std::string plugin_name() const override { return "file"; }
-  const logger_t logger = get_logger(SourcePlugin::plugin_full_name());
 
   std::shared_ptr<arrow::Schema> schema;
 
   // TODO: Validate config
   explicit SourceFilePlugin(const std::string &id, const config_t &config)
       : SourcePlugin(id, config) {
+    init_logger();
+
     const auto format =
         *format_config->get_as<std::string>(string::keyword::type);
     const auto cols = format_config->get_table_array(string::keyword::columns);
