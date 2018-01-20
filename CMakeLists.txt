@@ -46,15 +46,21 @@ include_directories(SYSTEM
         src/cpptoml/include
         src/spdlog/include
         src/text-csv/include
-        src/pybind11/include)
+        src/pybind11/include
+        src/json/src)
 
 
 # plugins
 ## source
-### file
+### file (csv) # TODO: Move to format
 set(AMANOGAWA_PLUGIN_SOURCE_FILE source_file)
 add_library(${AMANOGAWA_PLUGIN_SOURCE_FILE} SHARED src/amanogawa/plugin/source/file/file.cpp)
 target_link_libraries(${AMANOGAWA_PLUGIN_SOURCE_FILE} ${LIB_ARROW})
+
+### json # TODO: Move to format
+set(AMANOGAWA_PLUGIN_SOURCE_JSON source_json)
+add_library(${AMANOGAWA_PLUGIN_SOURCE_JSON} SHARED src/amanogawa/plugin/source/json/json.cpp)
+target_link_libraries(${AMANOGAWA_PLUGIN_SOURCE_JSON} ${LIB_ARROW})
 
 ## flow
 ### filter
