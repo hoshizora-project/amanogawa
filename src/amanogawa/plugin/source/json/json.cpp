@@ -9,8 +9,8 @@
 
 namespace amanogawa {
 namespace plugin {
-namespace sink {
-namespace file {
+namespace source {
+namespace json {
 struct SourceJsonPlugin : SourcePlugin {
   std::string plugin_name() const override { return "json"; }
 
@@ -123,7 +123,7 @@ __attribute__((visibility("default"))) extern "C" source_plugin_t
 get_plugin(const std::string &id, const config_t &config) {
   return std::make_shared<SourceJsonPlugin>(id, config);
 }
-} // namespace file
-} // namespace sink
+} // namespace json
+} // namespace source
 } // namespace plugin
 } // namespace amanogawa
