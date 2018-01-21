@@ -17,3 +17,6 @@
 	path = src/json
 	url = git@github.com:nlohmann/json.git
 	branch = master
+[submodule "src/pugixml"]
+	path = src/pugixml
+	url = git@github.com:zeux/pugixml.git

@@ -47,7 +47,8 @@ include_directories(SYSTEM
         src/spdlog/include
         src/text-csv/include
         src/pybind11/include
-        src/json/src)
+        src/json/src
+        src/pugixml/src)
 
 
 # plugins
@@ -61,6 +62,12 @@ target_link_libraries(${AMANOGAWA_PLUGIN_SOURCE_FILE} ${LIB_ARROW})
 set(AMANOGAWA_PLUGIN_SOURCE_JSON source_json)
 add_library(${AMANOGAWA_PLUGIN_SOURCE_JSON} SHARED src/amanogawa/plugin/source/json/json.cpp)
 target_link_libraries(${AMANOGAWA_PLUGIN_SOURCE_JSON} ${LIB_ARROW})
+
+### xml # TODO: Move to format
+set(AMANOGAWA_PLUGIN_SOURCE_XML source_xml)
+add_library(${AMANOGAWA_PLUGIN_SOURCE_XML} SHARED src/amanogawa/plugin/source/xml/xml.cpp)
+add_subdirectory(src/pugixml)
+target_link_libraries(${AMANOGAWA_PLUGIN_SOURCE_XML} ${LIB_ARROW} pugixml)
 
 ## flow
 ### filter
