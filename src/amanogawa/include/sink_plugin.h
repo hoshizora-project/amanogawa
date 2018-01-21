@@ -13,17 +13,13 @@ struct SinkPlugin : Plugin {
   std::string plugin_full_name() const override {
     return "sink_" + plugin_name();
   }
-  const std::string from; // need???
-
-  // TODO: Make `format` a standalone plugin
-  const Config::table_t format_config;
+  const std::string from;
 
   virtual void *drain(const std::shared_ptr<arrow::Table> &data) const = 0;
 
   SinkPlugin(const std::string &id, const std::string &from,
              const config_t &config)
-      : Plugin(id, config), from(from),
-        format_config(this->config->get_table("format")) {}
+      : Plugin(id, config), from(from) {}
 };
 
 using sink_plugin_t = std::shared_ptr<SinkPlugin>;

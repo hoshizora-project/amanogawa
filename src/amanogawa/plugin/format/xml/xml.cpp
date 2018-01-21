@@ -10,20 +10,20 @@
 
 namespace amanogawa {
 namespace plugin {
-namespace source {
+namespace format {
 namespace xml {
-struct SourceXmlPlugin : SourcePlugin {
+struct FormatXmlPlugin : FormatPlugin {
   std::string plugin_name() const override { return "xml"; }
 
   std::shared_ptr<arrow::Schema> schema;
 
-  explicit SourceXmlPlugin(const std::string &id, const config_t &config)
-      : SourcePlugin(id, config) {
+  explicit FormatXmlPlugin(const std::string &id, const config_t &config)
+      : FormatPlugin(id, config) {
     init_logger();
 
     const auto format =
-        *format_config->get_as<std::string>(string::keyword::type);
-    const auto cols = format_config->get_table_array(string::keyword::columns);
+        *this->config->get_as<std::string>(string::keyword::type);
+    const auto cols = this->config->get_table_array(string::keyword::columns);
     std::vector<std::shared_ptr<arrow::Field>> fields;
     for (const auto &col : *cols) {
       fields.emplace_back(std::make_shared<arrow::Field>(
@@ -34,16 +34,13 @@ struct SourceXmlPlugin : SourcePlugin {
     schema = arrow::schema(fields);
   }
 
-  std::shared_ptr<arrow::Table> spring() const override {
-    logger->info("spring");
+  std::shared_ptr<arrow::Table> parse(const std::string &path) const override {
+    logger->info("parse");
 
     using namespace pugi;
 
-    const auto file_name = *config->get_as<std::string>("path");
-    // std::ifstream fs(file_name);
-
     xml_document doc;
-    const auto result = doc.load_file(file_name.c_str());
+    const auto result = doc.load_file(path.c_str());
 
     const auto num_fields = static_cast<size_t>(schema->num_fields());
     std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
@@ -85,13 +82,20 @@ struct SourceXmlPlugin : SourcePlugin {
 
     return arrow::Table::Make(schema, columns);
   }
+
+  void *format(const std::string &path,
+               const std::shared_ptr<arrow::Table> &table) const override {
+    logger->info("format");
+
+    throw std::runtime_error("Not implemented");
+  }
 };
 
-__attribute__((visibility("default"))) extern "C" source_plugin_t
+__attribute__((visibility("default"))) extern "C" format_plugin_t
 get_plugin(const std::string &id, const config_t &config) {
-  return std::make_shared<SourceXmlPlugin>(id, config);
+  return std::make_shared<FormatXmlPlugin>(id, config);
 }
 } // namespace xml
-} // namespace source
+} // namespace format
 } // namespace plugin
 } // namespace amanogawa

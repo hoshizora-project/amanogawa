@@ -9,28 +9,28 @@
 
 namespace amanogawa {
 namespace plugin {
-namespace source {
+namespace format {
 namespace json {
-struct SourceJsonPlugin : SourcePlugin {
+struct FormatJsonPlugin : FormatPlugin {
   std::string plugin_name() const override { return "json"; }
 
   std::shared_ptr<arrow::Schema> schema;
 
-  explicit SourceJsonPlugin(const std::string &id, const config_t &config)
-      : SourcePlugin(id, config) {
+  explicit FormatJsonPlugin(const std::string &id, const config_t &config)
+      : FormatPlugin(id, config) {
     init_logger();
 
-    const auto format =
-        *format_config->get_as<std::string>(string::keyword::type);
-    const auto cols = format_config->get_table_array(string::keyword::columns);
-    std::vector<std::shared_ptr<arrow::Field>> fields;
-    for (const auto &col : *cols) {
-      fields.emplace_back(std::make_shared<arrow::Field>(
-          *col->get_as<std::string>(string::keyword::name),
-          get_arrow_data_type(
-              *col->get_as<std::string>(string::keyword::type))));
+    const auto cols = this->config->get_table_array(string::keyword::columns);
+    if (cols != nullptr) {
+      std::vector<std::shared_ptr<arrow::Field>> fields;
+      for (const auto &col : *cols) {
+        fields.emplace_back(std::make_shared<arrow::Field>(
+            *col->get_as<std::string>(string::keyword::name),
+            get_arrow_data_type(
+                *col->get_as<std::string>(string::keyword::type))));
+      }
+      schema = arrow::schema(fields);
     }
-    schema = arrow::schema(fields);
   }
 
   inline bool ends_with(std::string const &value,
@@ -40,13 +40,12 @@ struct SourceJsonPlugin : SourcePlugin {
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
   }
 
-  std::shared_ptr<arrow::Table> spring() const override {
-    logger->info("spring");
+  std::shared_ptr<arrow::Table> parse(const std::string &path) const override {
+    logger->info("parse");
 
     using json = nlohmann::json;
 
-    const auto file_name = *config->get_as<std::string>("path");
-    std::ifstream fs(file_name);
+    std::ifstream fs(path);
 
     const auto num_fields = static_cast<size_t>(schema->num_fields());
     std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
@@ -55,7 +54,7 @@ struct SourceJsonPlugin : SourcePlugin {
       builders.emplace_back(get_arrow_builder(field->type()->name()));
     }
 
-    const auto is_jsonl = ends_with(file_name, ".jsonl") ||
+    const auto is_jsonl = ends_with(path, ".jsonl") ||
                           config->get_as<bool>("jsonl").value_or(false);
     if (!is_jsonl) {
       json parsed;
@@ -117,13 +116,20 @@ struct SourceJsonPlugin : SourcePlugin {
 
     return arrow::Table::Make(schema, columns);
   }
+
+  void *format(const std::string &path,
+               const std::shared_ptr<arrow::Table> &table) const override {
+    logger->info("format");
+
+    throw std::runtime_error("Not implemented");
+  }
 };
 
-__attribute__((visibility("default"))) extern "C" source_plugin_t
+__attribute__((visibility("default"))) extern "C" format_plugin_t
 get_plugin(const std::string &id, const config_t &config) {
-  return std::make_shared<SourceJsonPlugin>(id, config);
+  return std::make_shared<FormatJsonPlugin>(id, config);
 }
 } // namespace json
-} // namespace source
+} // namespace format
 } // namespace plugin
 } // namespace amanogawa

@@ -12,6 +12,7 @@
 #include "amanogawa/include/source_plugin.h"
 #include "amanogawa/include/branch_plugin.h"
 #include "amanogawa/include/confluence_plugin.h"
+#include "amanogawa/include/format_plugin.h"
 #include "amanogawa/include/util.h"
 // clang-format on
 

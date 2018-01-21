@@ -53,21 +53,27 @@ include_directories(SYSTEM
 
 # plugins
 ## source
-### file (csv) # TODO: Move to format
+### file
 set(AMANOGAWA_PLUGIN_SOURCE_FILE source_file)
 add_library(${AMANOGAWA_PLUGIN_SOURCE_FILE} SHARED src/amanogawa/plugin/source/file/file.cpp)
 target_link_libraries(${AMANOGAWA_PLUGIN_SOURCE_FILE} ${LIB_ARROW})
 
-### json # TODO: Move to format
-set(AMANOGAWA_PLUGIN_SOURCE_JSON source_json)
-add_library(${AMANOGAWA_PLUGIN_SOURCE_JSON} SHARED src/amanogawa/plugin/source/json/json.cpp)
-target_link_libraries(${AMANOGAWA_PLUGIN_SOURCE_JSON} ${LIB_ARROW})
+## format
+### csv
+set(AMANOGAWA_PLUGIN_FORMAT_CSV format_csv)
+add_library(${AMANOGAWA_PLUGIN_FORMAT_CSV} SHARED src/amanogawa/plugin/format/csv/csv.cpp)
+target_link_libraries(${AMANOGAWA_PLUGIN_FORMAT_CSV} ${LIB_ARROW})
 
-### xml # TODO: Move to format
-set(AMANOGAWA_PLUGIN_SOURCE_XML source_xml)
-add_library(${AMANOGAWA_PLUGIN_SOURCE_XML} SHARED src/amanogawa/plugin/source/xml/xml.cpp)
+### json
+set(AMANOGAWA_PLUGIN_FORMAT_JSON format_json)
+add_library(${AMANOGAWA_PLUGIN_FORMAT_JSON} SHARED src/amanogawa/plugin/format/json/json.cpp)
+target_link_libraries(${AMANOGAWA_PLUGIN_FORMAT_JSON} ${LIB_ARROW})
+
+### xml
+set(AMANOGAWA_PLUGIN_FORMAT_XML format_xml)
+add_library(${AMANOGAWA_PLUGIN_FORMAT_XML} SHARED src/amanogawa/plugin/format/xml/xml.cpp)
 add_subdirectory(src/pugixml)
-target_link_libraries(${AMANOGAWA_PLUGIN_SOURCE_XML} ${LIB_ARROW} pugixml)
+target_link_libraries(${AMANOGAWA_PLUGIN_FORMAT_XML} ${LIB_ARROW} pugixml)
 
 ## flow
 ### filter
@@ -104,6 +110,9 @@ target_link_libraries(${AMANOGAWA_PLUGIN_SINK_NUMPY} ${LIB_ARROW} ${LIB_ARROW_PY
 
 set_target_properties(
         ${AMANOGAWA_PLUGIN_SOURCE_FILE}
+        ${AMANOGAWA_PLUGIN_FORMAT_CSV}
+        ${AMANOGAWA_PLUGIN_FORMAT_JSON}
+        ${AMANOGAWA_PLUGIN_FORMAT_XML}
         ${AMANOGAWA_PLUGIN_FLOW_FILTER}
         ${AMANOGAWA_PLUGIN_FLOW_TO_GRAPH}
         ${AMANOGAWA_PLUGIN_BRANCH_COLUMN}

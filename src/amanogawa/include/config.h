@@ -34,6 +34,22 @@ struct Config {
         }
       }
     }
+
+    // nested
+    for (const auto &clazz_key : clazz_keys) {
+      const auto clazz = table->get_table(clazz_key);
+      const auto id_keys = clazz->get_keys();
+      for (const auto &id_key : id_keys) {
+        const auto type = clazz->get_table(id_key);
+        const auto item_keys = type->get_keys();
+        for (const auto &item_key : item_keys) {
+          if (id_key + "." + item_key == id) {
+            return type->get_table(item_key);
+          }
+        }
+      }
+    }
+
     throw std::runtime_error(id + " not found");
   }
 };

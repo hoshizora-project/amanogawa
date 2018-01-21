@@ -22,6 +22,8 @@ constexpr auto from = "from";
 constexpr auto to = "to";
 constexpr auto name = "name";
 constexpr auto columns = "columns";
+constexpr auto format = "format";
+constexpr auto format_type = "format.type";
 } // namespace keyword
 } // namespace string
 } // namespace amanogawa

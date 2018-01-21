@@ -14,13 +14,10 @@ struct SourcePlugin : Plugin {
     return "source_" + plugin_name();
   }
 
-  // TODO: Make `format` a standalone plugin
-  const Config::table_t format_config;
-
   virtual std::shared_ptr<arrow::Table> spring() const = 0;
 
   SourcePlugin(const std::string &id, const config_t &config)
-      : Plugin(id, config), format_config(this->config->get_table("format")) {}
+      : Plugin(id, config) {}
 };
 
 using source_plugin_t = std::shared_ptr<SourcePlugin>;
