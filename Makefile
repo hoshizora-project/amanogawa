@@ -14,12 +14,14 @@ init:
 		cmake \
 			-DARROW_BUILD_TESTS=OFF \
 			-DARROW_PYTHON=ON \
-			-DPYTHON_EXECUTABLE=python3 \
+			-DPYTHON_EXECUTABLE=`which python3` \
 			.. && \
 		make
 	cd src/cpptoml && \
+		git checkout . && \
 		git apply ../../patch/cpptoml
 	cd src/pybind11 && \
+		git checkout . && \
 		git apply ../../patch/pybind11
 
 .PHONY: debug
