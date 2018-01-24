@@ -87,6 +87,44 @@ struct FlowGraph {
     const auto table = config->table;
     auto flow_graph = std::make_unique<FlowGraph>();
 
+    // #source == 1 && #flow == 0-1(will be >=0?) && #sink == 1 && #others == 0
+    //   -> simple config which doesn't need id and from
+    const auto class_keys = table->get_keys();
+    const std::unordered_set<std::string> class_keys_set(class_keys.begin(),
+                                                         class_keys.end());
+    if (class_keys_set.find(string::clazz::branch) == class_keys_set.end() &&
+        class_keys_set.find(string::clazz::confluence) ==
+            class_keys_set.end() &&
+        table->get_qualified_as<std::string>("source.type") &&
+        table->get_qualified_as<std::string>("sink.type")) {
+      // insert id and from
+      auto source_table = cpptoml::make_table();
+      auto _source_table = table->get_table(string::clazz::source);
+      source_table->insert(string::clazz::source, _source_table);
+      table->erase(string::clazz::source);
+      table->insert(string::clazz::source, source_table);
+
+      auto sink_table = cpptoml::make_table();
+      auto _sink_table = table->get_table(string::clazz::sink);
+
+      if (table->get_qualified_as<std::string>("flow.type")) {
+        auto flow_table = cpptoml::make_table();
+        auto _flow_table = table->get_table(string::clazz::flow);
+        _flow_table->insert(string::keyword::from, string::clazz::source);
+        flow_table->insert(string::clazz::flow, _flow_table);
+        table->erase(string::clazz::flow);
+        table->insert(string::clazz::flow, flow_table);
+
+        _sink_table->insert(string::keyword::from, string::clazz::flow);
+      } else {
+        _sink_table->insert(string::keyword::from, string::clazz::source);
+      }
+
+      sink_table->insert(string::clazz::sink, _sink_table);
+      table->erase(string::clazz::sink);
+      table->insert(string::clazz::sink, sink_table);
+    }
+
     const std::vector<std::string> clazzes = {
         string::clazz::source, string::clazz::flow, string::clazz::branch,
         string::clazz::confluence, string::clazz::sink};
