@@ -23,11 +23,18 @@ PYBIND11_MODULE(amanogawa, m) {
       .def("confluence", &ConfigBuilder::confluence,
            py::return_value_policy::reference)
       .def("sink", &ConfigBuilder::sink, py::return_value_policy::reference)
+      .def("source", &ConfigBuilder::source_simple,
+           py::return_value_policy::reference)
+      .def("flow", &ConfigBuilder::flow_simple,
+           py::return_value_policy::reference)
+      .def("sink", &ConfigBuilder::sink_simple,
+           py::return_value_policy::reference)
+      .def("format", &ConfigBuilder::format, py::return_value_policy::reference)
       .def("build", &ConfigBuilder::build, py::return_value_policy::reference)
+      .def("set", &ConfigBuilder::set<bool>, py::return_value_policy::reference)
       .def("set", &ConfigBuilder::set<int>, py::return_value_policy::reference)
       .def("set", &ConfigBuilder::set<double>,
            py::return_value_policy::reference)
-      .def("set", &ConfigBuilder::set<bool>, py::return_value_policy::reference)
       .def("set", &ConfigBuilder::set<std::string>,
            py::return_value_policy::reference)
       .def("set", &ConfigBuilder::set_array<int>,
@@ -50,10 +57,10 @@ PYBIND11_MODULE(amanogawa, m) {
            py::return_value_policy::reference)
       .def("set", &ConfigBuilder::set_map<std::string>,
            py::return_value_policy::reference)
+      .def("set", &ConfigBuilder::set_<bool>,
+           py::return_value_policy::reference)
       .def("set", &ConfigBuilder::set_<int>, py::return_value_policy::reference)
       .def("set", &ConfigBuilder::set_<double>,
-           py::return_value_policy::reference)
-      .def("set", &ConfigBuilder::set_<bool>,
            py::return_value_policy::reference)
       .def("set", &ConfigBuilder::set_<std::string>,
            py::return_value_policy::reference)

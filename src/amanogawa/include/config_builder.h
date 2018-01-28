@@ -10,7 +10,8 @@
 namespace amanogawa {
 // TODO: Add helper function which supports nested and hetero configs
 struct ConfigBuilder {
-  std::string curr_id; // FIXME: Type as state
+  bool is_simple_config = false; // FIXME: Type as state
+  std::string curr_id;           // FIXME: Type as state
   std::unordered_map<std::string, std::string> id_clazz;
 
   Config::table_t config;
@@ -20,7 +21,9 @@ struct ConfigBuilder {
   config_t build() { return std::make_shared<Config>(config); }
 
   Config::table_t curr_table() {
-    return config->get_table(id_clazz.at(curr_id))->get_table(curr_id);
+    return !is_simple_config ? config->get_table(id_clazz.at(curr_id))
+                                   ->get_table_qualified(curr_id)
+                             : config->get_table_qualified(curr_id);
   }
 
   ConfigBuilder *source(const std::string &id, const std::string &type) {
@@ -40,8 +43,35 @@ struct ConfigBuilder {
     return this;
   }
 
+  ConfigBuilder *source_simple(const std::string &type) {
+    auto source_table = cpptoml::make_table();
+    source_table->insert(string::keyword::type, type);
+    config->insert(string::clazz::source, source_table);
+
+    id_clazz.emplace(string::clazz::source, string::clazz::source);
+    curr_id = string::clazz::source;
+    is_simple_config = true;
+    return this;
+  }
+
+  ConfigBuilder *format(const std::string &type) {
+    assert(id_clazz.at(curr_id) == string::clazz::source ||
+           id_clazz.at(curr_id) == string::clazz::sink);
+
+    auto format_table = cpptoml::make_table();
+    format_table->insert(string::keyword::type, type);
+    curr_table()->insert(string::keyword::format, format_table);
+
+    id_clazz.emplace(curr_id + "." + string::keyword::format,
+                     string::keyword::format);
+    curr_id += "." + std::string(string::keyword::format);
+    return this;
+  }
+
   ConfigBuilder *flow(const std::string &id, const std::string &type,
                       const std::string &from) {
+    assert(!is_simple_config);
+
     auto id_table = cpptoml::make_table();
     id_table->insert(string::keyword::type, type);
     id_table->insert(string::keyword::from, from);
@@ -59,8 +89,23 @@ struct ConfigBuilder {
     return this;
   }
 
+  // TMP: Accept only single flow
+  ConfigBuilder *flow_simple(const std::string &type) {
+    assert(is_simple_config);
+
+    auto flow_table = cpptoml::make_table();
+    flow_table->insert(string::keyword::type, type);
+    config->insert(string::clazz::flow, flow_table);
+
+    id_clazz.emplace(string::clazz::flow, string::clazz::flow);
+    curr_id = string::clazz::flow;
+    return this;
+  }
+
   ConfigBuilder *branch(const std::string &id, const std::string &type,
                         const std::string &from) {
+    assert(!is_simple_config);
+
     auto id_table = cpptoml::make_table();
     id_table->insert(string::keyword::type, type);
     id_table->insert(string::keyword::from, from);
@@ -81,6 +126,8 @@ struct ConfigBuilder {
   ConfigBuilder *confluence(const std::string &id, const std::string &type,
                             const std::string &from_left,
                             const std::string &from_right) {
+    assert(!is_simple_config);
+
     auto id_table = cpptoml::make_table();
     id_table->insert(string::keyword::type, type);
     // id_table->insert(string::keyword::from + "_left", from_left);
@@ -101,6 +148,8 @@ struct ConfigBuilder {
 
   ConfigBuilder *sink(const std::string &id, const std::string &type,
                       const std::string &from) {
+    assert(!is_simple_config);
+
     auto id_table = cpptoml::make_table();
     id_table->insert(string::keyword::type, type);
     id_table->insert(string::keyword::from, from);
@@ -115,6 +164,18 @@ struct ConfigBuilder {
 
     id_clazz.emplace(id, string::clazz::sink);
     curr_id = id;
+    return this;
+  }
+
+  ConfigBuilder *sink_simple(const std::string &type) {
+    assert(is_simple_config);
+
+    auto sink_table = cpptoml::make_table();
+    sink_table->insert(string::keyword::type, type);
+    config->insert(string::clazz::sink, sink_table);
+
+    id_clazz.emplace(string::clazz::sink, string::clazz::sink);
+    curr_id = string::clazz::sink;
     return this;
   }
 
