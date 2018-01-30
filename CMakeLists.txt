@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.0)
 project(amanogawa)
 
 #set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
@@ -8,9 +8,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -Wno-return-type-c-linkage -DSPDLOG_DEBUG_ON")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-set(PYTHON_VERSION 3.6)
+set(PYTHON_VERSION 3)
 set(PYBIND11_PYTHON_VERSION ${PYTHON_VERSION})
-set(PYTHON_EXECUTABLE python${PYTHON_VERSION})
+execute_process(COMMAND bash -c "echo -n `which python${PYTHON_VERSION}`" OUTPUT_VARIABLE PYTHON_EXECUTABLE)
 
 if (UNIX AND NOT APPLE)
     # linux
