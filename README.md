@@ -1,15 +1,45 @@
-## definition
-* `class` (`clazz`)
-  * `source`
-  * `flow`
-  * `branch`
-  * `confluence`
-  * `sink`
-* `type`
-  * `filter_column`
-  * `to_graph`
-  * `s3`
-* `id`
-  * `some_csv_file_source`
-  * `awesome_filter`
-  * `abyss_s3`
+# :milky_way: amanogawa: Graph construction meets DAG-based data-oriented processing engine
+hogehoge
+
+## :sparkles: Features
+* Easy to use
+  * You can use as a Python library, C++ library and CLI tool
+  * Flexible DAG representation
+* Extremely fast
+  * Full native speed
+  * Empowered by [Apache Arrow][arrow]
+* Modular design
+  * You can add templates of data source, format, data processing, join, branch, etc. as plugin
+
+## :bulb: Example
+### Task1
+Single data source, csv
+
+```csv
+id,name
+0,Aries
+1,Taurus
+2,Gemini
+3,Cancer
+4,Leo
+5,Virgo
+6,Libra
+7,Scorpius
+8,Sagittarius
+9,Capricornus
+10,Aquarius
+11,Pisces
+```
+
+### Task2
+
+## :persevere: WIP
+* [ ] Automatic schema config generator, like guess in embulk
+* [ ] Out-of-core processing
+* [ ] Effective parallel processing and scheduling
+* [ ] Dynamic DAG scheduling
+* [ ] Row-based and Column-based, compound data handling
+* [ ] Tests
+* [ ] Many many plugins
+
+[arrow]: https://arrow.apache.org
