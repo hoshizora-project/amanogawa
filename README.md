@@ -34,11 +34,13 @@ id,name
 ### Task2
 
 ## :persevere: WIP
-* [ ] Automatic schema config generator, like guess in embulk
+* [ ] Automatic input schema config generator, like guess in embulk
 * [ ] Out-of-core processing
 * [ ] Effective parallel processing and scheduling
 * [ ] Dynamic DAG scheduling
+* [ ] Effective use of Apache Arrow
 * [ ] Row-based and Column-based, compound data handling
+* [ ] Data validation and error handling
 * [ ] Tests
 * [ ] Many many plugins
 
