@@ -1,0 +1,18 @@
+[source]
+type = "file"
+path = "kinmosa.csv"
+[source.format]
+type = "csv"
+skip_header = true
+columns = [
+  { name = "id", type = "int" },
+  { name = "name", type = "string" },
+  { name = "blood_type", type = "int" }
+]
+
+[sink]
+type = "file"
+path = "kinmosa.tsv"
+[sink.format]
+type = "csv"
+delimiter = "\t"

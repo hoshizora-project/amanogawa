@@ -20,50 +20,34 @@ struct FlowToGraphPlugin : FlowPlugin {
     init_logger();
   }
 
-  // FIXME: Use NN-Descent
   std::shared_ptr<arrow::Table>
   flow(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("flow");
 
-    // TODO: Share input, intermediate and output schema on config
-    const auto cols = root_config->get_by_id(from)->get_table_array_qualified(
-        "format.csv.columns");
-    std::vector<std::shared_ptr<arrow::Field>> fields;
-    for (const auto &col : *cols) {
-      fields.emplace_back(
-          arrow::field(*(col->get_as<std::string>(string::keyword::name)),
-                       get_arrow_data_type(
-                           *col->get_as<std::string>(string::keyword::type))));
-    }
+    const auto knn_config = config->get_table("knn");
+    const auto k = knn_config->get_as<int>("k").value_or(3);
+    const auto p = knn_config->get_as<double>("p").value_or(1.5);
+    const auto col_from = knn_config->get_as<int>("col_from").value_or(0);
+    const auto col_to =
+        knn_config->get_as<int>("col_to").value_or(table->num_columns());
 
-    const auto num_feats = fields.size() - 1; // -1 means label
+    const auto num_feats = col_to - col_from;
     const auto num_entries = table->num_rows();
-
-    const auto input_schema = arrow::schema(fields);
 
     std::vector<std::vector<double>> rows(num_entries);
     for (size_t i = 0; i < num_entries; ++i) {
       std::vector<double> row(num_feats);
-      for (size_t j = 0; j < num_feats + 1; ++j) {
-        const auto field_name = fields[j]->name();
-        if (field_name == "label") {
-          continue;
-        }
-
-        const auto field_idx = table->schema()->GetFieldIndex(field_name);
-        const auto col = table->column(field_idx);
-        const auto chunk = col->data()->chunk(0);
+      for (size_t j = col_from; j < col_to; ++j) {
+        const auto col = table->column(j);
+        const auto chunk = col->data()->chunk(0); // only single chunk...
         const auto float64_chunk =
             std::static_pointer_cast<arrow::DoubleArray>(chunk);
-        row[j - 1] = float64_chunk->Value(i);
+        row[j - col_from] = float64_chunk->Value(i);
       }
       rows[i] = row;
     }
 
-    // TODO: Make configurable
-    const auto k = 3;
-    const auto p = 1.5;
-
+    // FIXME: Now o(n^2), use NN-Descent
     std::vector<std::vector<std::tuple<int, double>>> distances(
         num_entries, std::vector<std::tuple<int, double>>(
                          num_entries, std::make_tuple(0, 0)));
@@ -125,9 +109,9 @@ struct FlowToGraphPlugin : FlowPlugin {
   }
 };
 
-extern "C" flow_plugin_t
-get_plugin(const std::string &id, const std::string &from,
-           const config_t &config) {
+extern "C" flow_plugin_t get_plugin(const std::string &id,
+                                    const std::string &from,
+                                    const config_t &config) {
   return std::make_shared<FlowToGraphPlugin>(id, from, config);
 }
 } // namespace example_add

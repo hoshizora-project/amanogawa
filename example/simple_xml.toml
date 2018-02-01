@@ -1,0 +1,17 @@
+[source.read_awesome_xml]
+type = "xml"
+path = "test.xml"
+[source.read_awesome_xml.format]
+#type = "xml"
+columns = [
+  { name = "id", type = "int" },
+  { name = "name", type = "string" }
+]
+
+[sink.write_awesome_csv]
+type = "file"
+path = "result.csv"
+from = "read_awesome_xml"
+[sink.write_awesome_csv.format]
+delimiter = ","
+columns = []

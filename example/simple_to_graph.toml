@@ -1,0 +1,19 @@
+[source]
+type = "file"
+path = "../example/mnist.csv"
+[source.format]
+type = "csv"
+skip_columns = [ "label" ]
+
+
+[flow]
+type = "to_graph"
+knn = { k = 3, p = 1.5 }
+
+
+[sink]
+type = "file"
+path = "mnist_graph.tsv"
+[sink.format]
+type = "csv"
+delimiter = "\t"

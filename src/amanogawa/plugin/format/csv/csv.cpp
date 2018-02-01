@@ -14,23 +14,26 @@ namespace csv {
 struct FormatCsvPlugin : FormatPlugin {
   std::string plugin_name() const override { return "csv"; }
 
-  std::shared_ptr<arrow::Schema> schema;
-
   // TODO: Validate config
   explicit FormatCsvPlugin(const std::string &id, const config_t &config)
       : FormatPlugin(id, config) {
     init_logger();
+  }
 
-    const auto cols = this->config->get_table_array(string::keyword::columns);
+  std::shared_ptr<arrow::Schema> get_schema_from_config() const {
+    const auto cols = config->get_table_array(string::keyword::columns);
     if (cols != nullptr) {
       std::vector<std::shared_ptr<arrow::Field>> fields;
       for (const auto &col : *cols) {
-        fields.emplace_back(std::make_shared<arrow::Field>(
-            *col->get_as<std::string>(string::keyword::name),
-            get_arrow_data_type(
-                *col->get_as<std::string>(string::keyword::type))));
+        fields.emplace_back(
+            arrow::field(*col->get_as<std::string>(string::keyword::name),
+                         get_arrow_data_type(*col->get_as<std::string>(
+                             string::keyword::type))));
       }
-      schema = arrow::schema(fields);
+
+      return arrow::schema(fields);
+    } else {
+      return nullptr;
     }
   }
 
@@ -43,7 +46,47 @@ struct FormatCsvPlugin : FormatPlugin {
         config->get_as<std::string>("delimiter").value_or(",");
     text::csv::csv_istream csv_is(fs, delimiter[0]);
 
+    auto schema = get_schema_from_config();
+    const auto use_schema_from_header = schema == nullptr;
+
+    const auto num_header_lines =
+        config->get_as<int>("num_header_lines").value_or(1);
+    std::vector<int> skip_idxes = {};
+    if (use_schema_from_header) {
+      const auto type =
+          config->get_as<std::string>("data_type").value_or("double");
+      const auto skip_cols = config->get_array_of<std::string>("skip_columns");
+
+      int col_idx = 0;
+      std::vector<std::shared_ptr<arrow::Field>> fields;
+      while (csv_is.line_number() <= num_header_lines) {
+        std::string header_col;
+        csv_is >> header_col;
+
+        // TMP: Accept only single type for all cols
+        // FIXME
+        if (!skip_cols) {
+          fields.emplace_back(
+              arrow::field(header_col, get_arrow_data_type(type)));
+        } else if (std::find(skip_cols->begin(), skip_cols->end(),
+                             header_col) == skip_cols->end()) {
+          fields.emplace_back(
+              arrow::field(header_col, get_arrow_data_type(type)));
+        } else {
+          skip_idxes.emplace_back(col_idx);
+        }
+        col_idx++;
+      }
+      schema = arrow::schema(fields);
+    } else {
+      while (csv_is.line_number() <= num_header_lines) {
+        std::string devnull;
+        csv_is >> devnull;
+      }
+    }
+
     const auto num_fields = static_cast<size_t>(schema->num_fields());
+    const auto num_all_fields = num_fields + skip_idxes.size();
 
     std::vector<std::shared_ptr<arrow::ArrayBuilder>> builders;
     builders.reserve(num_fields);
@@ -51,35 +94,38 @@ struct FormatCsvPlugin : FormatPlugin {
       builders.emplace_back(get_arrow_builder(field->type()->name()));
     }
 
-    const auto skip_header = config->get_as<bool>("skip_header");
-    if (skip_header.value_or(false)) {
-      while (csv_is.line_number() == 1) {
-        std::string devnull;
-        csv_is >> devnull;
-      }
-    }
-
     // FIXME: Manage invalid row
-    // FIXME: Extra invalid row??? (mnist)
-    // TMP: Accept only complete config of columns
+    // TMP: Only int, double and string
     while (csv_is) {
-      for (size_t i = 0; i < num_fields; ++i) {
-        const auto type = schema->field(static_cast<int>(i))->type()->id();
+      for (size_t i = 0, out_i = 0; i < num_all_fields; ++i, ++out_i) {
+        if (!skip_idxes.empty() &&
+            std::find(skip_idxes.begin(), skip_idxes.end(), i) !=
+                skip_idxes.end()) {
+          out_i--;
+          std::string devnull;
+          csv_is >> devnull;
+          continue;
+        }
+
+        const auto type = schema->field(static_cast<int>(out_i))->type()->id();
         // FIXME: Use visitor or pre-planing (concat field info for each row)
         if (type == arrow::Int32Type::type_id) {
           int val;
           csv_is >> val;
-          std::static_pointer_cast<arrow::Int32Builder>(builders.at(i))
+          std::static_pointer_cast<arrow::Int32Builder>(
+              builders.at(out_i))
               ->Append(val);
         } else if (type == arrow::DoubleType::type_id) {
           double val;
           csv_is >> val;
-          std::static_pointer_cast<arrow::DoubleBuilder>(builders.at(i))
+          std::static_pointer_cast<arrow::DoubleBuilder>(
+              builders.at(out_i))
               ->Append(val);
         } else if (type == arrow::StringType::type_id) {
           std::string val;
           csv_is >> val;
-          std::static_pointer_cast<arrow::StringBuilder>(builders.at(i))
+          std::static_pointer_cast<arrow::StringBuilder>(
+              builders.at(out_i))
               ->Append(val);
         } else {
           logger->warn("Detected unsupported type: {}", type);
@@ -103,8 +149,11 @@ struct FormatCsvPlugin : FormatPlugin {
                const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("format");
 
+    const auto schema = get_schema_from_config();
+    const auto use_schema_from_input = schema == nullptr;
+
     const auto output_fields =
-        schema != nullptr ? schema->fields() : table->schema()->fields();
+        use_schema_from_input ? table->schema()->fields() : schema->fields();
 
     std::ofstream fs(path);
     const auto delimiter =
@@ -170,8 +219,8 @@ struct FormatCsvPlugin : FormatPlugin {
   }
 };
 
-extern "C" format_plugin_t
-get_plugin(const std::string &id, const config_t &config) {
+extern "C" format_plugin_t get_plugin(const std::string &id,
+                                      const config_t &config) {
   return std::make_shared<FormatCsvPlugin>(id, config);
 }
 } // namespace csv
