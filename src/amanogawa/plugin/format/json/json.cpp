@@ -125,7 +125,7 @@ struct FormatJsonPlugin : FormatPlugin {
   }
 };
 
-__attribute__((visibility("default"))) extern "C" format_plugin_t
+extern "C" format_plugin_t
 get_plugin(const std::string &id, const config_t &config) {
   return std::make_shared<FormatJsonPlugin>(id, config);
 }
