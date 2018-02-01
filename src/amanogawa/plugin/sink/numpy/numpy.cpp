@@ -50,9 +50,9 @@ struct SinkNumpyPlugin : SinkPlugin {
   }
 };
 
-extern "C" sink_plugin_t
-get_plugin(const std::string &id, const std::string &from,
-           const config_t &config) {
+extern "C" sink_plugin_t get_plugin(const std::string &id,
+                                    const std::string &from,
+                                    const config_t &config) {
   return std::make_shared<SinkNumpyPlugin>(id, from, config);
 }
 } // namespace numpy

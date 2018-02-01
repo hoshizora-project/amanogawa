@@ -125,8 +125,8 @@ struct FormatJsonPlugin : FormatPlugin {
   }
 };
 
-extern "C" format_plugin_t
-get_plugin(const std::string &id, const config_t &config) {
+extern "C" format_plugin_t get_plugin(const std::string &id,
+                                      const config_t &config) {
   return std::make_shared<FormatJsonPlugin>(id, config);
 }
 } // namespace json

@@ -48,9 +48,9 @@ struct BranchColumnPlugin : BranchPlugin {
   }
 };
 
-extern "C" branch_plugin_t
-get_plugin(const std::string &id, const std::string &from,
-           const config_t &config) {
+extern "C" branch_plugin_t get_plugin(const std::string &id,
+                                      const std::string &from,
+                                      const config_t &config) {
   return std::make_shared<BranchColumnPlugin>(id, from, config);
 }
 } // namespace column

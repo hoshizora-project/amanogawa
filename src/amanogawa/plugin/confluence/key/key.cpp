@@ -133,9 +133,10 @@ struct ConfluenceKeyPlugin : ConfluencePlugin {
     return int32_join(left_table, right_table, left_col, right_col);
   }
 }; // namespace key
-extern "C" confluence_plugin_t
-get_plugin(const std::string &id, const std::string &from_left,
-           const std::string &from_right, const config_t &config) {
+extern "C" confluence_plugin_t get_plugin(const std::string &id,
+                                          const std::string &from_left,
+                                          const std::string &from_right,
+                                          const config_t &config) {
   return std::make_shared<ConfluenceKeyPlugin>(id, from_left, from_right,
                                                config);
 }

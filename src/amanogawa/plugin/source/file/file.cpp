@@ -33,8 +33,8 @@ struct SourceFilePlugin : SourcePlugin {
   }
 }; // namespace file
 
-extern "C" source_plugin_t
-get_plugin(const std::string &id, const config_t &config) {
+extern "C" source_plugin_t get_plugin(const std::string &id,
+                                      const config_t &config) {
   return std::make_shared<SourceFilePlugin>(id, config);
 }
 } // namespace file
