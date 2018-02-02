@@ -112,20 +112,17 @@ struct FormatCsvPlugin : FormatPlugin {
         if (type == arrow::Int32Type::type_id) {
           int val;
           csv_is >> val;
-          std::static_pointer_cast<arrow::Int32Builder>(
-              builders.at(out_i))
+          std::static_pointer_cast<arrow::Int32Builder>(builders.at(out_i))
               ->Append(val);
         } else if (type == arrow::DoubleType::type_id) {
           double val;
           csv_is >> val;
-          std::static_pointer_cast<arrow::DoubleBuilder>(
-              builders.at(out_i))
+          std::static_pointer_cast<arrow::DoubleBuilder>(builders.at(out_i))
               ->Append(val);
         } else if (type == arrow::StringType::type_id) {
           std::string val;
           csv_is >> val;
-          std::static_pointer_cast<arrow::StringBuilder>(
-              builders.at(out_i))
+          std::static_pointer_cast<arrow::StringBuilder>(builders.at(out_i))
               ->Append(val);
         } else {
           logger->warn("Detected unsupported type: {}", type);

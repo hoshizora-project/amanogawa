@@ -98,6 +98,8 @@ struct FormatJsonPlugin : FormatPlugin {
           } else if (type == arrow::StringType::type_id) {
             std::static_pointer_cast<arrow::StringBuilder>(builders.at(i))
                 ->Append(parsed[key].get<std::string>());
+            //} else if (type == arrow::Date32Type::type_id) {
+            //} else if (type == arrow::Date64Type::type_id) {
           } else {
             logger->warn("Detected unsupported type: {}", type);
           }
