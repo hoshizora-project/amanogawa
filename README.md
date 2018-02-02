@@ -3,7 +3,7 @@ hogehoge
 
 ## :sparkles: Features
 * Easy to use
-  * You can use as a Python library, C++ library and CLI tool
+  * You can use *amanogawa* as a Python library, C++ library and CLI tool
   * Flexible DAG representation
 * Extremely fast
   * Full native speed
@@ -12,8 +12,8 @@ hogehoge
   * You can add templates of data source, format, data processing, join, branch, etc. as plugin
 
 ## :bulb: Example
-### Task1
-Single data source, csv
+### Task1: Simple
+Read a single csv, filter and then export to tsv
 
 ```csv
 id,name
@@ -31,7 +31,11 @@ id,name
 11,Pisces
 ```
 
-### Task2
+### Task2: Graph construction
+
+### Task3: Complex
+Read a json and csv, join them, split by column and then write them into csv
+
 
 ## :persevere: WIP
 * [ ] Automatic input schema config generator, like guess in embulk
