@@ -20,3 +20,6 @@
 [submodule "src/pugixml"]
 	path = src/pugixml
 	url = git@github.com:zeux/pugixml.git
+[submodule "src/pcm"]
+	path = src/pcm
+	url = git@github.com:opcm/pcm.git

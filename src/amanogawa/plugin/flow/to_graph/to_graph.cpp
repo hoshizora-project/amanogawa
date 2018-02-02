@@ -1,16 +1,16 @@
 #include "amanogawa/include/api.h"
+#include "measure.h"
+#include "nndescent.h"
 #include <algorithm>
 #include <arrow/api.h>
-#include <arrow/compute/api.h>
 #include <cmath>
 #include <string>
-#include <tuple>
 #include <vector>
 
 namespace amanogawa {
 namespace plugin {
 namespace flow {
-namespace example_add {
+namespace to_graph {
 struct FlowToGraphPlugin : FlowPlugin {
   std::string plugin_name() const override { return "to_graph"; }
 
@@ -20,47 +20,155 @@ struct FlowToGraphPlugin : FlowPlugin {
     init_logger();
   }
 
+  // FIXME: Use arrow directly and support discrete table/chunk
   std::shared_ptr<arrow::Table>
   flow(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("flow");
 
+    // overall
+    const auto mode = config->get_as<std::string>("mode").value_or("cosine");
+
+    // knn
     const auto knn_config = config->get_table("knn");
-    const auto k = knn_config->get_as<int>("k").value_or(3);
+    const auto knn_mode =
+        knn_config->get_as<std::string>("mode").value_or("approx");
+    const auto k = knn_config->get_as<uint32_t>("k").value_or(3);
     const auto p = knn_config->get_as<double>("p").value_or(1.5);
-    const auto col_from = knn_config->get_as<int>("col_from").value_or(0);
-    const auto col_to =
-        knn_config->get_as<int>("col_to").value_or(table->num_columns());
+
+    // others
+    const auto col_from =
+        knn_config->get_as<std::size_t>("col_from").value_or(0);
+    const auto col_to = knn_config->get_as<std::size_t>("col_to").value_or(
+        table->num_columns());
 
     const auto num_feats = col_to - col_from;
-    const auto num_entries = table->num_rows();
+    const auto num_entries = static_cast<std::size_t>(table->num_rows());
 
-    std::vector<std::vector<double>> rows(num_entries);
-    for (size_t i = 0; i < num_entries; ++i) {
-      std::vector<double> row(num_feats);
-      for (size_t j = col_from; j < col_to; ++j) {
-        const auto col = table->column(j);
-        const auto chunk = col->data()->chunk(0); // only single chunk...
-        const auto float64_chunk =
-            std::static_pointer_cast<arrow::DoubleArray>(chunk);
-        row[j - col_from] = float64_chunk->Value(i);
-      }
-      rows[i] = row;
-    }
+    std::unordered_map<size_t, std::unordered_set<size_t>> adj_list{};
 
-    // FIXME: Now o(n^2), use NN-Descent
-    std::vector<std::vector<std::tuple<int, double>>> distances(
-        num_entries, std::vector<std::tuple<int, double>>(
-                         num_entries, std::make_tuple(0, 0)));
-    for (size_t i = 0; i < num_entries; ++i) {
-      for (size_t j = i + 1; j < num_entries; ++j) {
-        double diff = 0;
-        for (size_t k = 0; k < num_feats; ++k) {
-          diff += std::pow(std::abs(rows[i][k] - rows[j][k]), p);
+    if (mode == "cosine") {
+      // FIXME
+      std::vector<std::vector<double>> rows(num_entries);
+      for (size_t i = 0; i < num_entries; ++i) {
+        std::vector<double> row(num_feats);
+        for (size_t j = col_from; j < col_to; ++j) {
+          const auto col = table->column(j);
+          const auto chunk = col->data()->chunk(0); // TMP: only single chunk...
+          const auto float64_chunk =
+              std::static_pointer_cast<arrow::DoubleArray>(chunk);
+          row[j - col_from] = float64_chunk->Value(i);
         }
-        const auto distance = std::pow(diff, 1 / p);
-        distances[i][j] = std::make_tuple(j, distance);
-        distances[j][i] = std::make_tuple(i, distance);
+        rows[i] = row;
       }
+
+      if (knn_mode == "approx") {
+        // NN-Descent
+        const auto rho = knn_config->get_as<double>("rho").value_or(0.5);
+        const auto perturb = knn_config->get_as<double>("perturb").value_or(0);
+        const auto num_random_join =
+            knn_config->get_as<uint32_t>("num_random_join").value_or(10);
+        const auto epoch =
+            knn_config->get_as<std::size_t>("epoch").value_or(100);
+        const auto delta = knn_config->get_as<double>("delta").value_or(0.001);
+
+        auto nnDescent = NNDescent<std::vector<double>, CosineMeasure>(
+            k, CosineMeasure(p), rho, perturb, num_random_join);
+        nnDescent.exec(rows, epoch, delta);
+
+        for (size_t i = 0; i < num_entries; ++i) {
+          adj_list.emplace(i, std::unordered_set<size_t>{}); // FIXME
+
+          const auto nghs = nnDescent.nghs[i];
+          for (const auto &ngh : nghs) {
+            const auto min = std::min(i, ngh.node_id);
+            const auto max = std::max(i, ngh.node_id);
+            adj_list[min].emplace(max);
+          }
+        }
+      } else if (knn_mode == "exact") {
+        // Native
+        std::vector<std::vector<std::tuple<int, double>>> distances(
+            num_entries, std::vector<std::tuple<int, double>>(num_entries));
+        const auto cos = CosineMeasure(p);
+        for (size_t i = 0; i < num_entries; ++i) {
+          for (size_t j = i + 1; j < num_entries; ++j) {
+            const auto distance = cos(rows[i], rows[j]);
+            distances[i][j] = std::make_tuple(j, distance);
+            distances[j][i] = std::make_tuple(i, distance);
+          }
+        }
+
+        for (size_t i = 0; i < num_entries; ++i) {
+          adj_list.emplace(i, std::unordered_set<size_t>{}); // FIXME
+
+          std::sort(distances[i].begin(), distances[i].end(),
+                    [](const auto &l, const auto &r) {
+                      return std::get<1>(l) < std::get<1>(r);
+                    });
+          for (size_t j = 0; j < k; ++j) {
+            if (i == j) {
+              continue;
+            }
+            const auto min = std::min((int)i, std::get<0>(distances[i][j]));
+            const auto max = std::max((int)i, std::get<0>(distances[i][j]));
+            adj_list[min].emplace(max);
+          }
+        }
+      }
+    } else if (mode == "bow") {
+      const auto col_name = *config->get_as<std::string>("column");
+      const auto col_idx = table->schema()->GetFieldIndex(col_name);
+
+      // FIXME
+      std::vector<std::string> rows(num_entries);
+      const auto col = table->column(col_idx);
+      const auto chunk = col->data()->chunk(0); // TMP: only single chunk...
+      const auto string_chunk =
+          std::static_pointer_cast<arrow::StringArray>(chunk);
+      for (size_t i = 0; i < num_entries; ++i) {
+        rows[i] = string_chunk->GetString(i);
+      }
+
+      if (knn_mode == "approx") {
+        // NN-Descent
+        const auto rho = knn_config->get_as<double>("rho").value_or(0.5);
+        const auto perturb = knn_config->get_as<double>("perturb").value_or(0);
+        const auto num_random_join =
+            knn_config->get_as<uint32_t>("num_random_join").value_or(10);
+        const auto epoch =
+            knn_config->get_as<std::size_t>("epoch").value_or(10);
+        const auto delta = knn_config->get_as<double>("delta").value_or(0.01);
+
+        // BoW
+        std::vector<BoWMeasure::data_t> wakati_maps;
+        for (const auto &sentence : rows) {
+          const auto words = BoWMeasure::wakati(sentence);
+          BoWMeasure::data_t wakati_map{};
+          for (const auto &word : words) {
+            wakati_map[word]++;
+          }
+          wakati_maps.emplace_back(wakati_map);
+        }
+
+        auto nnDescent = NNDescent<BoWMeasure::data_t, BoWMeasure>(
+            k, BoWMeasure(p), rho, perturb, num_random_join);
+        nnDescent.exec(wakati_maps, epoch, delta);
+
+        for (size_t i = 0; i < num_entries; ++i) {
+          adj_list.emplace(i, std::unordered_set<size_t>{}); // FIXME
+
+          const auto nghs = nnDescent.nghs[i];
+          for (const auto &ngh : nghs) {
+            const auto min = std::min(i, ngh.node_id);
+            const auto max = std::max(i, ngh.node_id);
+            adj_list[min].emplace(max);
+          }
+        }
+      } else if (knn_mode == "exact") {
+        throw std::runtime_error("Not implemented: BoW > exact");
+      }
+    } else {
+      throw std::runtime_error("Not implemented: " + mode + " > " + knn_mode);
     }
 
     std::vector<std::shared_ptr<arrow::Field>> output_fields = {
@@ -69,31 +177,12 @@ struct FlowToGraphPlugin : FlowPlugin {
     const auto output_schema = arrow::schema(output_fields);
     arrow::Int32Builder src_builder, dst_builder;
 
-    std::vector<std::tuple<int, int>> tmp; // FIXME
     for (size_t i = 0; i < num_entries; ++i) {
-      std::sort(distances[i].begin(), distances[i].end(),
-                [](const auto &l, const auto &r) {
-                  return std::get<1>(l) < std::get<1>(r);
-                });
-      for (size_t j = 0; j < k; ++j) {
-        const auto min = std::min((int)i, std::get<0>(distances[i][j]));
-        const auto max = std::max((int)i, std::get<0>(distances[i][j]));
-        tmp.emplace_back(std::make_tuple(min, max));
+      const auto nghs = adj_list.at(i);
+      for (const auto &ngh : nghs) {
+        src_builder.Append(i);
+        dst_builder.Append(ngh);
       }
-    }
-    std::sort(tmp.begin(), tmp.end(), [](const auto &l, const auto &r) {
-      return std::get<1>(l) < std::get<1>(r);
-    });
-    std::stable_sort(tmp.begin(), tmp.end(), [](const auto &l, const auto &r) {
-      return std::get<0>(l) < std::get<0>(r);
-    });
-    auto prev = std::make_tuple(-1, -1);
-    for (const auto &tup : tmp) {
-      if (prev != tup) {
-        src_builder.Append(std::get<0>(tup));
-        dst_builder.Append(std::get<1>(tup));
-      }
-      prev = tup;
     }
 
     std::vector<std::shared_ptr<arrow::Column>> columns;
@@ -114,7 +203,7 @@ extern "C" flow_plugin_t get_plugin(const std::string &id,
                                     const config_t &config) {
   return std::make_shared<FlowToGraphPlugin>(id, from, config);
 }
-} // namespace example_add
+} // namespace to_graph
 } // namespace flow
 } // namespace plugin
 } // namespace amanogawa
