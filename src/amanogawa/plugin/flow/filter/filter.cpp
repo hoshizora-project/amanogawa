@@ -1,5 +1,7 @@
 #include "amanogawa/include/flow_plugin.h"
 #include "amanogawa/include/util.h"
+#include <memory>
+#include <unordered_map>
 
 namespace amanogawa {
 namespace plugin {
@@ -14,11 +16,15 @@ struct FlowFilterPlugin : FlowPlugin {
     init_logger();
   }
 
-  std::shared_ptr<arrow::Table>
+  std::shared_ptr<
+      std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>
   flow(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("flow");
 
-    return table; // TMP: pass-through
+    const auto result = std::make_shared<
+        std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>();
+    result->emplace(id, table);
+    return result; // TMP: pass-through
   }
 };
 

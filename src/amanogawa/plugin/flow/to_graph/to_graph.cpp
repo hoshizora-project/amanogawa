@@ -21,7 +21,8 @@ struct FlowToGraphPlugin : FlowPlugin {
   }
 
   // FIXME: Use arrow directly and support discrete table/chunk
-  std::shared_ptr<arrow::Table>
+  std::shared_ptr<
+      std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>
   flow(const std::shared_ptr<arrow::Table> &table) const override {
     logger->info("flow");
 
@@ -194,7 +195,33 @@ struct FlowToGraphPlugin : FlowPlugin {
     columns.emplace_back(
         std::make_shared<arrow::Column>(output_fields[1], dst_array));
 
-    return arrow::Table::Make(output_schema, columns);
+    const auto tos = config->get_table_array(string::keyword::to);
+    auto result = std::make_shared<
+        std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>();
+
+    if (!tos) {
+      result->emplace(id, arrow::Table::Make(output_schema, columns));
+    } else {
+      auto it = tos->begin();
+      result->emplace(*(*it)->get_as<std::string>(string::keyword::name),
+                      arrow::Table::Make(output_schema, columns));
+
+      it++;
+      const auto cols =
+          (*it)->get_array_of<std::string>(string::keyword::columns);
+      std::vector<std::shared_ptr<arrow::Field>> meta_fields;
+      std::vector<std::shared_ptr<arrow::Column>> meta_columns;
+      for (const auto &col : *cols) {
+        meta_fields.emplace_back(table->schema()->GetFieldByName(col));
+        meta_columns.emplace_back(
+            table->column(table->schema()->GetFieldIndex(col)));
+      }
+      result->emplace(
+          *(*it)->get_as<std::string>(string::keyword::name),
+          arrow::Table::Make(arrow::schema(meta_fields), meta_columns));
+    }
+
+    return result;
   }
 };
 

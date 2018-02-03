@@ -15,7 +15,8 @@ struct FlowPlugin : Plugin {
   }
   const std::string from;
 
-  virtual std::shared_ptr<arrow::Table>
+  virtual std::shared_ptr<
+      std::unordered_map<std::string, std::shared_ptr<arrow::Table>>>
   flow(const std::shared_ptr<arrow::Table> &) const = 0;
 
   FlowPlugin(const std::string &id, const std::string &from,

@@ -169,6 +169,18 @@ struct FlowGraph {
           flow_graph->all.emplace(id, component);
           flow_graph->all_wo_synonym.emplace(id, component);
           flow_graph->flows.emplace_back(component);
+
+          // Register synonym
+          const auto tos =
+              config->get_by_id(id)->get_table_array(string::keyword::to);
+          // multiple outputs
+          if (tos) {
+            for (const auto &to : *tos) {
+              const auto synonym =
+                  *to->get_as<std::string>(string::keyword::name);
+              flow_graph->all.emplace(synonym, component);
+            }
+          }
         } else if (clazz == string::clazz::branch) {
           const auto from =
               *id_table->get_as<std::string>(string::keyword::from);
@@ -298,7 +310,7 @@ struct FlowGraph {
       if (clazz == string::clazz::source) {
       } else if (clazz == string::clazz::flow) {
         const auto prev_component =
-            component->prev.at(0); // source has only 1 prev component
+            component->prev.at(0); // flow has only 1 prev component
         component->deps.emplace(prev_component);
         std::copy(prev_component->deps.begin(), prev_component->deps.end(),
                   std::inserter(component->deps, component->deps.end()));

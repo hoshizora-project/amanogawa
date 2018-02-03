@@ -38,10 +38,13 @@ void *execute(const config_t &config) {
     } else if (component->clazz == string::clazz::flow) {
       const auto plugin = plugin::as_flow(component->plugin);
       // `component->prev.at(0)`: flow has only 1 prev component
-      data_slot[id].emplace(
-          id, plugin->flow(data_slot[component->prev.at(0)->id][plugin->from]));
+      const auto results =
+          plugin->flow(data_slot[component->prev.at(0)->id][plugin->from]);
+      for (const auto &result : *results) {
+        data_slot[id].emplace(result);
 
-      SPDLOG_DEBUG(logger, "slotted: ({}) as ({})", id, id);
+        SPDLOG_DEBUG(logger, "slotted: ({}) as ({})", id, result.first);
+      }
     } else if (component->clazz == string::clazz::branch) {
       const auto plugin = plugin::as_branch(component->plugin);
       // `component->prev.at(0)`: branch has only 1 prev component
