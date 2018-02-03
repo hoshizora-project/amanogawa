@@ -54,12 +54,43 @@ struct FormatJsonPlugin : FormatPlugin {
       builders.emplace_back(get_arrow_builder(field->type()->name()));
     }
 
+    const auto row_filter = config->get_table("filter");
+
     const auto is_jsonl = ends_with(path, ".jsonl") ||
                           config->get_as<bool>("jsonl").value_or(false);
     if (!is_jsonl) {
       json parsed;
       fs >> parsed;
       for (json::iterator it = parsed.begin(); it != parsed.end(); ++it) {
+        if (row_filter) {
+          const auto key = *row_filter->get_as<std::string>("key");
+          const auto op = it.value()[*row_filter->get_as<std::string>("op")]
+                              .get<std::string>();
+
+          const auto field = schema->GetFieldByName(key);
+          const auto type = field->type()->id();
+
+          if (type == arrow::Int32Type::type_id) {
+            const auto val = it.value()[key].get<int32_t>();
+            const auto cond = *row_filter->get_as<int32_t>("cond");
+            if (int32_filter(val, op, cond)) {
+              continue;
+            }
+          } else if (type == arrow::DoubleType::type_id) {
+            const auto val = it.value()[key].get<double>();
+            const auto cond = *row_filter->get_as<double>("cond");
+            if (double_filter(val, op, cond)) {
+              continue;
+            }
+          } else if (type == arrow::StringType::type_id) {
+            const auto val = it.value()[key].get<std::string>();
+            const auto cond = *row_filter->get_as<std::string>("cond");
+            if (string_filter(val, op, cond)) {
+              continue;
+            }
+          }
+        }
+
         for (size_t i = 0; i < num_fields; ++i) {
           const auto field = schema->field(i);
           const auto type = field->type()->id();
@@ -84,6 +115,35 @@ struct FormatJsonPlugin : FormatPlugin {
       std::string line;
       while (std::getline(fs, line)) {
         const auto parsed = json::parse(line);
+
+        if (row_filter) {
+          const auto key = *row_filter->get_as<std::string>("key");
+          const auto op = *row_filter->get_as<std::string>("op");
+
+          const auto field = schema->GetFieldByName(key);
+          const auto type = field->type()->id();
+
+          if (type == arrow::Int32Type::type_id) {
+            const auto val = parsed[key].get<int32_t>();
+            const auto cond = *row_filter->get_as<int32_t>("cond");
+            if (int32_filter(val, op, cond)) {
+              continue;
+            }
+          } else if (type == arrow::DoubleType::type_id) {
+            const auto val = parsed[key].get<double>();
+            const auto cond = *row_filter->get_as<double>("cond");
+            if (double_filter(val, op, cond)) {
+              continue;
+            }
+          } else if (type == arrow::StringType::type_id) {
+            const auto val = parsed[key].get<std::string>();
+            const auto cond = *row_filter->get_as<std::string>("cond");
+            if (string_filter(val, op, cond)) {
+              continue;
+            }
+          }
+        }
+
         for (size_t i = 0; i < num_fields; ++i) {
           const auto field = schema->field(i);
           const auto type = field->type()->id();

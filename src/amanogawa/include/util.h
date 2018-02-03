@@ -75,7 +75,7 @@ auto get_arrow_builder(const std::string &type,
   return arrow_builder_table.at(normalize_table.at(type))(pool);
 }
 
-// others
+// string
 inline std::vector<std::string> split(const std::string &str, const char &sep) {
   std::vector<std::string> res;
   auto first = str.begin();
@@ -93,6 +93,61 @@ inline std::vector<std::string> split(const std::string &str, const char &sep) {
   return res;
 }
 
+// filter
+bool int32_filter(const int32_t &val, const std::string &op,
+                  const int32_t &cond) {
+  if (op == "==") {
+    return val != cond;
+  } else if (op == "!=") {
+    return val == cond;
+  } else if (op == ">") {
+    return val <= cond;
+  } else if (op == "<") {
+    return val >= cond;
+  } else if (op == ">=") {
+    return val < cond;
+  } else if (op == "<=") {
+    return val > cond;
+  } else {
+    return false;
+  }
+}
+
+bool double_filter(const double &val, const std::string &op,
+                   const double &cond) {
+  if (op == "==") {
+    return val != cond;
+  } else if (op == "!=") {
+    return val == cond;
+  } else if (op == ">") {
+    return val <= cond;
+  } else if (op == "<") {
+    return val >= cond;
+  } else if (op == ">=") {
+    return val < cond;
+  } else if (op == "<=") {
+    return val > cond;
+  } else {
+    return false;
+  }
+}
+
+bool string_filter(const std::string &val, const std::string &op,
+                   const std::string &cond) {
+  if (op == "==") {
+    return val != cond;
+  } else if (op == "!=") {
+    return val == cond;
+  } else if (op == "contains") {
+    return val.find(cond) == std::string::npos;
+  } else if (op == "!contains") {
+    return val.find(cond) != std::string::npos;
+  } else {
+    return false;
+  }
+}
+
+// benchmark
 struct partial_score {
   const std::chrono::high_resolution_clock::time_point time;
 
