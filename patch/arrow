@@ -1,0 +1,74 @@
+diff --git a/cpp/CMakeLists.txt b/cpp/CMakeLists.txt
+index f4b7b29..76ab08e 100644
+--- a/cpp/CMakeLists.txt
++++ b/cpp/CMakeLists.txt
+@@ -24,7 +24,7 @@ string(REGEX MATCHALL
+ string(REGEX REPLACE
+   "(\n  <version>|</version>)" "" ARROW_VERSION "${ARROW_VERSION_TAG}")
+ 
+-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules")
++set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
+ 
+ include(CMakeParseArguments)
+ include(ExternalProject)
+@@ -46,7 +46,7 @@ endif()
+ set(ARROW_SO_VERSION "0")
+ set(ARROW_ABI_VERSION "${ARROW_SO_VERSION}.0.0")
+ 
+-set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/build-support")
++set(BUILD_SUPPORT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build-support")
+ 
+ set(CLANG_FORMAT_VERSION "4.0")
+ find_package(ClangTools)
+diff --git a/cpp/cmake_modules/ThirdpartyToolchain.cmake b/cpp/cmake_modules/ThirdpartyToolchain.cmake
+index 411cf75..5ef43e4 100644
+--- a/cpp/cmake_modules/ThirdpartyToolchain.cmake
++++ b/cpp/cmake_modules/ThirdpartyToolchain.cmake
+@@ -19,7 +19,7 @@
+ # ----------------------------------------------------------------------
+ # Thirdparty toolchain
+ 
+-set(THIRDPARTY_DIR "${CMAKE_SOURCE_DIR}/thirdparty")
++set(THIRDPARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
+ set(GFLAGS_VERSION "2.2.0")
+ set(GTEST_VERSION "1.8.0")
+ set(GBENCHMARK_VERSION "1.1.0")
+@@ -602,10 +602,10 @@ if (ARROW_WITH_SNAPPY)
+                             "-DCMAKE_C_FLAGS=${EX_C_FLAGS}"
+                             "-DCMAKE_INSTALL_PREFIX=${SNAPPY_PREFIX}")
+       set(SNAPPY_UPDATE_COMMAND ${CMAKE_COMMAND} -E copy
+-                        ${CMAKE_SOURCE_DIR}/cmake_modules/SnappyCMakeLists.txt
++                        ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/SnappyCMakeLists.txt
+                         ./CMakeLists.txt &&
+                         ${CMAKE_COMMAND} -E copy
+-                        ${CMAKE_SOURCE_DIR}/cmake_modules/SnappyConfig.h
++                        ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/SnappyConfig.h
+                         ./config.h)
+       ExternalProject_Add(snappy_ep
+         UPDATE_COMMAND ${SNAPPY_UPDATE_COMMAND}
+@@ -711,10 +711,10 @@ if (ARROW_WITH_LZ4)
+     if (MSVC)
+       set(LZ4_STATIC_LIB "${LZ4_BUILD_DIR}/visual/VS2010/bin/x64_${CMAKE_BUILD_TYPE}/liblz4_static.lib")
+       set(LZ4_BUILD_COMMAND BUILD_COMMAND msbuild.exe /m /p:Configuration=${CMAKE_BUILD_TYPE} /p:Platform=x64 /p:PlatformToolset=v140 /t:Build ${LZ4_BUILD_DIR}/visual/VS2010/lz4.sln)
+-      set(LZ4_PATCH_COMMAND PATCH_COMMAND git --git-dir=. apply --verbose --whitespace=fix ${CMAKE_SOURCE_DIR}/build-support/lz4_msbuild_wholeprogramoptimization_param.patch)
++      set(LZ4_PATCH_COMMAND PATCH_COMMAND git --git-dir=. apply --verbose --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/build-support/lz4_msbuild_wholeprogramoptimization_param.patch)
+     else()
+       set(LZ4_STATIC_LIB "${LZ4_BUILD_DIR}/lib/liblz4.a")
+-      set(LZ4_BUILD_COMMAND BUILD_COMMAND ${CMAKE_SOURCE_DIR}/build-support/build-lz4-lib.sh)
++      set(LZ4_BUILD_COMMAND BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-support/build-lz4-lib.sh)
+     endif()
+ 
+     ExternalProject_Add(lz4_ep
+@@ -755,10 +755,10 @@ if (ARROW_WITH_ZSTD)
+     if (MSVC)
+       set(ZSTD_STATIC_LIB "${ZSTD_BUILD_DIR}/build/VS2010/bin/x64_${CMAKE_BUILD_TYPE}/libzstd_static.lib")
+       set(ZSTD_BUILD_COMMAND BUILD_COMMAND msbuild ${ZSTD_BUILD_DIR}/build/VS2010/zstd.sln /t:Build /v:minimal /p:Configuration=${CMAKE_BUILD_TYPE} /p:Platform=x64 /p:PlatformToolset=v140 /p:OutDir=${ZSTD_BUILD_DIR}/build/VS2010/bin/x64_${CMAKE_BUILD_TYPE}/ /p:SolutionDir=${ZSTD_BUILD_DIR}/build/VS2010/ )
+-      set(ZSTD_PATCH_COMMAND PATCH_COMMAND git --git-dir=. apply --verbose --whitespace=fix ${CMAKE_SOURCE_DIR}/build-support/zstd_msbuild_wholeprogramoptimization_param.patch)
++      set(ZSTD_PATCH_COMMAND PATCH_COMMAND git --git-dir=. apply --verbose --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/build-support/zstd_msbuild_wholeprogramoptimization_param.patch)
+     else()
+       set(ZSTD_STATIC_LIB "${ZSTD_BUILD_DIR}/lib/libzstd.a")
+-      set(ZSTD_BUILD_COMMAND BUILD_COMMAND ${CMAKE_SOURCE_DIR}/build-support/build-zstd-lib.sh)
++      set(ZSTD_BUILD_COMMAND BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-support/build-zstd-lib.sh)
+     endif()
+ 
+     ExternalProject_Add(zstd_ep

@@ -9,14 +9,9 @@ phony: ;
 init:
 	git submodule init
 	git submodule update
-	mkdir -p src/arrow/cpp/build
-	cd src/arrow/cpp/build && \
-		cmake \
-			-DARROW_BUILD_TESTS=OFF \
-			-DARROW_PYTHON=ON \
-			-DPYTHON_EXECUTABLE=`which python3` \
-			.. && \
-		make
+	cd src/arrow && \
+		git checkout . && \
+		git apply ../../patch/arrow
 	cd src/cpptoml && \
 		git checkout . && \
 		git apply ../../patch/cpptoml
