@@ -17,25 +17,38 @@
 namespace amanogawa {
 // logger
 using logger_t = std::shared_ptr<spdlog::logger>;
+
+std::string logger_type = "stdout";
+
+logger_t create_logger(const std::string &type, const std::string &id) {
+  if (type == "stdout") {
+    return spdlog::stdout_color_mt(id);
+  } else if (type == "stderr") {
+    return spdlog::stderr_color_mt(id);
+  } else if (type == "file") {
+    return spdlog::basic_logger_mt(id, "log", false);
+  } else {
+    return spdlog::stderr_color_mt(id);
+  }
+}
+
 // TODO: Thread-safe
-static logger_t get_logger(const std::string &id) {
+logger_t get_logger(const std::string &id) {
   const auto fqid = "amanogawa@" + id;
   auto logger = spdlog::get(fqid);
-  return logger != nullptr ? logger : spdlog::stderr_color_mt(fqid);
+  return logger != nullptr ? logger : create_logger(logger_type, fqid);
 }
 
-static void drop_logger(const std::string &id) {
-  spdlog::drop("amanogawa@" + id);
-}
+void drop_logger(const std::string &id) { spdlog::drop("amanogawa@" + id); }
 
 // arrow
-static std::unordered_map<std::string, std::string> normalize_table = {
+std::unordered_map<std::string, std::string> normalize_table = {
     {"int32", "int32"},    {"int", "int32"},     {"float64", "float64"},
     {"double", "float64"}, {"utf8", "utf8"},     {"string", "utf8"},
     {"date32", "date32"},  {"date64", "date64"}, {"date", "date64"}};
 
-static std::unordered_map<std::string,
-                          std::function<std::shared_ptr<arrow::DataType>(void)>>
+std::unordered_map<std::string,
+                   std::function<std::shared_ptr<arrow::DataType>(void)>>
     arrow_data_type_table = {{"int32", []() { return arrow::int32(); }},
                              {"float64", []() { return arrow::float64(); }},
                              {"utf8", []() { return arrow::utf8(); }},
@@ -46,7 +59,7 @@ auto get_arrow_data_type(const std::string &type) {
   return arrow_data_type_table.at(normalize_table.at(type))();
 }
 
-static std::unordered_map<
+std::unordered_map<
     std::string,
     std::function<std::shared_ptr<arrow::ArrayBuilder>(arrow::MemoryPool *)>>
     arrow_builder_table = {
