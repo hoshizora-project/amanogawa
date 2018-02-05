@@ -100,6 +100,7 @@ target_link_libraries(${AMANOGAWA_PLUGIN_FORMAT_JSON} ${LIB_ARROW})
 set(AMANOGAWA_PLUGIN_FORMAT_XML format_xml)
 add_library(${AMANOGAWA_PLUGIN_FORMAT_XML} SHARED src/amanogawa/plugin/format/xml/xml.cpp)
 add_subdirectory(src/pugixml)
+set_property(TARGET pugixml PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(${AMANOGAWA_PLUGIN_FORMAT_XML} ${LIB_ARROW} pugixml)
 
 ## flow
