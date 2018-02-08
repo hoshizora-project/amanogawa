@@ -4,8 +4,8 @@ project(amanogawa)
 #set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
 #set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -Wno-return-type-c-linkage -DSPDLOG_DEBUG_ON -DDEBUG_ON")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -Wall -Wno-return-type-c-linkage -DSPDLOG_DEBUG_ON -DDEBUG_ON")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-return-type-c-linkage")
 
 set(PYTHON_VERSION 3)
@@ -23,6 +23,8 @@ else ()
 endif ()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLIBS_EXT=${LIBS_EXT}")
 
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/arrow/cpp/cmake_modules)
+
 #if (${CMAKE_BUILD_TYPE} MATCHES Debug)
 #    ## pcm
 #    set(PCM_SOURCES
@@ -39,8 +41,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLIBS_EXT=${LIBS_EXT}")
 add_subdirectory(src/pybind11)
 
 ## numpy
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/arrow/cpp/cmake_modules)
-find_package(NumPy REQUIRED)
+#find_package(NumPy REQUIRED)
 
 # python
 find_package(PythonLibsNew REQUIRED)
@@ -68,7 +69,7 @@ set(LIB_ARROW_PYTHON arrow_python_static)
 file(GLOB SOURCES src/amanogawa/**/*.h)
 include_directories(src)
 include_directories(SYSTEM
-        ${NUMPY_INCLUDE_DIRS}
+#        ${NUMPY_INCLUDE_DIRS}
         src/arrow/cpp/src
         src/cpptoml/include
         src/spdlog/include
@@ -135,9 +136,9 @@ add_library(${AMANOGAWA_PLUGIN_SINK_FILE} SHARED src/amanogawa/plugin/sink/file/
 target_link_libraries(${AMANOGAWA_PLUGIN_SINK_FILE} ${LIB_ARROW})
 
 ### numpy
-set(AMANOGAWA_PLUGIN_SINK_NUMPY sink_numpy)
-pybind11_add_module(${AMANOGAWA_PLUGIN_SINK_NUMPY} SHARED src/amanogawa/plugin/sink/numpy/numpy.cpp)
-target_link_libraries(${AMANOGAWA_PLUGIN_SINK_NUMPY} ${LIB_ARROW} ${LIB_ARROW_PYTHON} ${PYTHON_LIBRARIES})
+#set(AMANOGAWA_PLUGIN_SINK_NUMPY sink_numpy)
+#pybind11_add_module(${AMANOGAWA_PLUGIN_SINK_NUMPY} SHARED src/amanogawa/plugin/sink/numpy/numpy.cpp)
+#target_link_libraries(${AMANOGAWA_PLUGIN_SINK_NUMPY} ${LIB_ARROW} ${LIB_ARROW_PYTHON} ${PYTHON_LIBRARIES})
 
 set_target_properties(
         ${AMANOGAWA_PLUGIN_SOURCE_FILE}
@@ -149,7 +150,7 @@ set_target_properties(
         ${AMANOGAWA_PLUGIN_BRANCH_COLUMN}
         ${AMANOGAWA_PLUGIN_CONFLUENCE_KEY}
         ${AMANOGAWA_PLUGIN_SINK_FILE}
-        ${AMANOGAWA_PLUGIN_SINK_NUMPY}
+#        ${AMANOGAWA_PLUGIN_SINK_NUMPY}
         PROPERTIES PREFIX lib SUFFIX .${LIBS_EXT})
 
 
