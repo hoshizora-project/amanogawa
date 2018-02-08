@@ -218,7 +218,7 @@ id,type_string
 
 
 ## :persevere: WIP
-* [ ] Support multiple files
+* [ ] Support files with serial number
 * [ ] Efficient config builder
 * [ ] Automatic input schema config generator, like guess in embulk
 * [ ] Out-of-core processing
