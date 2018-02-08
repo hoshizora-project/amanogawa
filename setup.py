@@ -71,11 +71,14 @@ class CMakeBuild(build_ext):
 
 setup(
     name='amanogawa',
-    version='0.0.1',
+    version='0.0.1a0',
+    url='https://github.com/hoshizora-project/amanogawa',
+    description='Flexible graph construction and data pre-processing engine',
+    long_description='To appear',
     author='amaya',
     author_email='mail@sapphire.in.net',
-    description='To appear',
-    long_description='',
+    license='Apache2.0',
+    keywords='graph graph-processing graph-construction data-processing',
     ext_modules=[CMakeExtension('amanogawa')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
