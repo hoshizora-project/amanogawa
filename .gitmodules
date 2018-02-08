@@ -1,25 +1,25 @@
 [submodule "src/pybind11"]
 	path = src/pybind11
-	url = git@github.com:pybind/pybind11.git
+	url = https://github.com/pybind/pybind11.git
 [submodule "src/arrow"]
 	path = src/arrow
-	url = git@github.com:apache/arrow.git
+	url = https://github.com/apache/arrow.git
 [submodule "src/cpptoml"]
 	path = src/cpptoml
-	url = git@github.com:skystrife/cpptoml.git
+	url = https://github.com/skystrife/cpptoml.git
 [submodule "src/text-csv"]
 	path = src/text-csv
-	url = git@github.com:roman-kashitsyn/text-csv.git
+	url = https://github.com/roman-kashitsyn/text-csv.git
 [submodule "src/spdlog"]
 	path = src/spdlog
-	url = git@github.com:gabime/spdlog.git
+	url = https://github.com/gabime/spdlog.git
 [submodule "src/json"]
 	path = src/json
-	url = git@github.com:nlohmann/json.git
+	url = https://github.com/nlohmann/json.git
 	branch = master
 [submodule "src/pugixml"]
 	path = src/pugixml
-	url = git@github.com:zeux/pugixml.git
+	url = https://github.com/zeux/pugixml.git
 [submodule "src/pcm"]
 	path = src/pcm
-	url = git@github.com:opcm/pcm.git
+	url = https://github.com/opcm/pcm.git
