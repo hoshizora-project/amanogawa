@@ -4,7 +4,7 @@ Flexible graph construction and data pre-processing engine
 Tutorial is [here](https://github.com/hoshizora-project/tutorial).
 You can try *amanogawa* and [hoshizora](https://github.com/hoshizora-project/hoshizora) on Jupyter on Docker
 
-**:warning: Currently alpha version. Inner structure and APIs might be change a lot**
+**(:warning: Currently alpha version. Inner structure and APIs might be changed a lot)**
 
 
 ## :sparkles: Features
