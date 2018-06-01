@@ -231,3 +231,8 @@ id,type_string
 * [ ] Tools for creating third-party plugins
 * [ ] Tests
 * [ ] Many many plugins
+
+
+## :green_heart: Acknowledgement
+This project was supported by IPA (Mito Project)
+
