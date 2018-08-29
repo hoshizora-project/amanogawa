@@ -13,8 +13,31 @@ env:
     - CIBW_SKIP="cp27-* cp33-* cp34-* cp35-* *_i686"
     - CIBW_MANYLINUX1_X86_64_IMAGE=hoshizora/manylinux1-clang_x86_64:clang5
     #- CIBW_MANYLINUX1_I686_IMAGE=hoshizora/manylinux1-clang_i686:clang5
-    - CIBW_BEFORE_BUILD="yum update && yum install -y boost148 boost148-filesystem boost148-system && make init"
-    - CIBW_ENVIRONMENT="CXX=clang++"
+    - CIBW_ENVIRONMENT="CC=clang CXX=clang++ BOOST_INCLUDEDIR=/usr/include/boost148"
+    - >-
+      CIBW_BEFORE_BUILD="
+      NCORES=$(grep -c ^processor /proc/cpuinfo 2> /dev/null) &&
+      NPARS=$((${NCORES}*2)) &&
+      yum update &&
+      yum install -y boost148-devel boost148-filesystem boost148-system &&
+      ln -s /usr/lib64/libboost_system.so.1.48.0 /usr/lib64/libboost_system-1_48.so &&
+      ln -s /usr/lib64/libboost_system-mt.so.1.48.0 /usr/lib64/libboost_system-mt-1_48.so &&
+      ln -s /usr/lib64/libboost_filesystem.so.1.48.0 /usr/lib64/libboost_filesystem-1_48.so &&
+      ln -s /usr/lib64/libboost_filesystem-mt.so.1.48.0 /usr/lib64/libboost_filesystem-mt-1_48.so &&
+      cd &&
+      export CC=gcc &&
+      export CXX=g++ &&
+      git clone https://github.com/taku910/mecab.git &&
+      cd mecab/mecab &&
+      ./configure &&
+      make -j${NPARS} &&
+      make install &&
+      export CC=clang &&
+      export CXX=clang++ &&
+      cd /project &&
+      /opt/python/cp36-cp36m/bin/pip install numpy &&
+      /opt/python/cp37-cp37m/bin/pip install numpy &&
+      make init"
 
 script:
   - pip install cibuildwheel==0.9.1
