@@ -16,8 +16,8 @@ env:
     - CIBW_ENVIRONMENT="CC=clang CXX=clang++ BOOST_INCLUDEDIR=/usr/include/boost148"
     - >-
       CIBW_BEFORE_BUILD="
-      NCORES=$(grep -c ^processor /proc/cpuinfo 2> /dev/null) &&
-      NPARS=$((${NCORES}*2)) &&
+      NCORES=\$(grep -c ^processor /proc/cpuinfo 2> /dev/null) &&
+      NPARS=\$((\$NCORES*2)) &&
       yum update &&
       yum install -y boost148-devel boost148-filesystem boost148-system &&
       ln -s /usr/lib64/libboost_system.so.1.48.0 /usr/lib64/libboost_system-1_48.so &&
@@ -30,7 +30,7 @@ env:
       git clone https://github.com/taku910/mecab.git &&
       cd mecab/mecab &&
       ./configure &&
-      make -j${NPARS} &&
+      make -j\$NPARS &&
       make install &&
       export CC=clang &&
       export CXX=clang++ &&
