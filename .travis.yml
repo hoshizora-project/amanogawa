@@ -20,23 +20,22 @@ env:
       NPARS=\$((\$NCORES*2)) &&
       yum update &&
       yum install -y boost148-devel boost148-filesystem boost148-system &&
-      ln -s /usr/lib64/libboost_system.so.1.48.0 /usr/lib64/libboost_system-1_48.so &&
-      ln -s /usr/lib64/libboost_system-mt.so.1.48.0 /usr/lib64/libboost_system-mt-1_48.so &&
-      ln -s /usr/lib64/libboost_filesystem.so.1.48.0 /usr/lib64/libboost_filesystem-1_48.so &&
-      ln -s /usr/lib64/libboost_filesystem-mt.so.1.48.0 /usr/lib64/libboost_filesystem-mt-1_48.so &&
-      cd &&
-      export CC=gcc &&
-      export CXX=g++ &&
-      git clone https://github.com/taku910/mecab.git &&
-      cd mecab/mecab &&
-      ./configure &&
-      make -j\$NPARS &&
-      make install &&
-      export CC=clang &&
-      export CXX=clang++ &&
+      ( [ ! -e /usr/lib64/libboost_system-1_48.so ] && (
+        ln -s /usr/lib64/libboost_system.so.1.48.0 /usr/lib64/libboost_system-1_48.so &&
+        ln -s /usr/lib64/libboost_system-mt.so.1.48.0 /usr/lib64/libboost_system-mt-1_48.so &&
+        ln -s /usr/lib64/libboost_filesystem.so.1.48.0 /usr/lib64/libboost_filesystem-1_48.so &&
+        ln -s /usr/lib64/libboost_filesystem-mt.so.1.48.0 /usr/lib64/libboost_filesystem-mt-1_48.so ) || : ) &&
+      ( [ ! `which mecab 2> /dev/null` ] && (
+        cd &&
+        export CC=gcc &&
+        export CXX=g++ &&
+        git clone --depth 1 --single-branch -b master https://github.com/taku910/mecab.git &&
+        cd mecab/mecab &&
+        ./configure &&
+        make -j\$NPARS &&
+        make install ) || : ) &&
       cd /project &&
-      /opt/python/cp36-cp36m/bin/pip install numpy &&
-      /opt/python/cp37-cp37m/bin/pip install numpy &&
+      pip install numpy &&
       make init"
 
 script:
