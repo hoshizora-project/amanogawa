@@ -1,5 +1,8 @@
 DEBUG_BUILD_DIR := 'cmake-build-debug'
 RELEASE_BUILD_DIR := 'cmake-build-release'
+OS := $(shell uname)
+NCORES := $(shell [ "${OS}" = 'Linux' ] && grep -c ^processor /proc/cpuinfo 2> /dev/null || sysctl -n hw.ncpu)
+NPARS := $(shell echo $$\(\(${NCORES}*2\)\))
 
 .PHONY: phony
 phony: ;
@@ -25,7 +28,7 @@ debug:
 	cd ${DEBUG_BUILD_DIR} && \
 		export CXX=clang++ && \
 		cmake -DCMAKE_BUILD_TYPE=Debug .. && \
-		make -j 2
+		make -j${NPARS}
 
 .PHONY: release
 release:
@@ -33,7 +36,7 @@ release:
 	cd ${RELEASE_BUILD_DIR} && \
 		export CXX=clang++ && \
 		cmake -DCMAKE_BUILD_TYPE=Release .. && \
-		make -j 2
+		make -j${NPARS}
 
 .PHONY: all
 all: release debug

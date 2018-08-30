@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.0)
 project(amanogawa)
 
-#set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
-#set(CMAKE_CXX_COMPILER clang++)
+execute_process(COMMAND
+    sh -c "which clang++ | tr -d '\\n'"
+    OUTPUT_VARIABLE CMAKE_CXX_COMPILER)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -Wall -Wno-return-type-c-linkage -DSPDLOG_DEBUG_ON -DDEBUG_ON")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-return-type-c-linkage")
 
-set(PYTHON_VERSION 3)
+execute_process(COMMAND
+    sh -c "python3 -V 2>&1 | grep -oP '\\d\\.\\d(?=\\.\\d)' | tr -d '\\n'"
+    OUTPUT_VARIABLE PYTHON_VERSION)
 set(PYBIND11_PYTHON_VERSION ${PYTHON_VERSION})
-execute_process(COMMAND bash -c "echo -n `which python${PYTHON_VERSION}`" OUTPUT_VARIABLE PYTHON_EXECUTABLE)
 
 if (UNIX AND NOT APPLE)
     # linux
@@ -157,7 +159,7 @@ set_target_properties(
 # cli
 set(AMANOGAWA_CLI amanogawa-cli)
 add_executable(${AMANOGAWA_CLI} ${SOURCES} src/amanogawa/cli.cpp)
-target_link_libraries(${AMANOGAWA_CLI} dl ${LIB_ARROW} ${LIB_ARROW_PYTHON} pybind11::embed)
+target_link_libraries(${AMANOGAWA_CLI} dl ${LIB_ARROW} ${LIB_ARROW_PYTHON})
 
 
 # pybind
