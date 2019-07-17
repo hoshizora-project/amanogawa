@@ -1,0 +1,10 @@
+cmake-build/
+cmake-build-debug/
+Dockerfile
+.dockerignore
+build/
+dist/
+amanogawa.egg-info/
+.vscode/
+.history/
+example/

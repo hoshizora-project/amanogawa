@@ -1,0 +1,6 @@
+// See https://aka.ms/vscode-remote/devcontainer.json for format details.
+{
+	"dockerFile": "Dockerfile",
+	"extensions": [],
+	"runArgs": ["--security-opt=seccomp:unconfined"]
+}
