@@ -73,7 +73,7 @@ struct FlowToGraphPlugin : FlowPlugin {
         const auto delta = knn_config->get_as<double>("delta").value_or(0.001);
 
         auto nnDescent = NNDescent<std::vector<double>, CosineMeasure>(
-            k, CosineMeasure(p), rho, perturb, num_random_join);
+            k, CosineMeasure(), rho, perturb, num_random_join);
         nnDescent.exec(rows, epoch, delta);
 
         for (size_t i = 0; i < num_entries; ++i) {
@@ -87,31 +87,31 @@ struct FlowToGraphPlugin : FlowPlugin {
           }
         }
       } else if (knn_mode == "exact") {
-        // Native
-        std::vector<std::vector<std::tuple<int, double>>> distances(
+        // Naive
+        std::vector<std::vector<std::tuple<int, double>>> sims(
             num_entries, std::vector<std::tuple<int, double>>(num_entries));
-        const auto cos = CosineMeasure(p);
+        const auto cos = CosineMeasure();
         for (size_t i = 0; i < num_entries; ++i) {
           for (size_t j = i + 1; j < num_entries; ++j) {
-            const auto distance = cos(rows[i], rows[j]);
-            distances[i][j] = std::make_tuple(j, distance);
-            distances[j][i] = std::make_tuple(i, distance);
+            const auto sim = cos(rows[i], rows[j]);
+            sims[i][j] = std::make_tuple(j, sim);
+            sims[j][i] = std::make_tuple(i, sim);
           }
         }
 
         for (size_t i = 0; i < num_entries; ++i) {
           adj_list.emplace(i, std::unordered_set<size_t>{}); // FIXME
 
-          std::sort(distances[i].begin(), distances[i].end(),
+          std::sort(sims[i].begin(), sims[i].end(),
                     [](const auto &l, const auto &r) {
-                      return std::get<1>(l) < std::get<1>(r);
+                      return std::get<1>(l) > std::get<1>(r);
                     });
           for (size_t j = 0; j < k; ++j) {
             if (i == j) {
               continue;
             }
-            const auto min = std::min((int)i, std::get<0>(distances[i][j]));
-            const auto max = std::max((int)i, std::get<0>(distances[i][j]));
+            const auto min = std::min((int)i, std::get<0>(sims[i][j]));
+            const auto max = std::max((int)i, std::get<0>(sims[i][j]));
             adj_list[min].emplace(max);
           }
         }

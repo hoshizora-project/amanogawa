@@ -44,7 +44,7 @@ public:
   using nghs_t = std::vector<ngh_t>;
 
   // FIXME: Slow
-  const std::function<bool(ngh_t, ngh_t)> comp_dist =
+  const std::function<bool(ngh_t, ngh_t)> comp_sim =
       [](const auto &l, const auto &r) { return l.sim > r.sim; };
 
   using rand_t = std::mt19937;
@@ -186,7 +186,7 @@ private:
         assert(i != j);
         nbd[count++] = ngh_t(j, this->measure(node.data, this->nodes[j].data));
       }
-      std::sort(nbd.begin(), nbd.end(), comp_dist);
+      std::sort(nbd.begin(), nbd.end(), comp_sim);
 
       checked[i].resize(nbd.size(), false);
 
@@ -204,7 +204,7 @@ private:
       return K2;
     } else {
       return std::upper_bound(ngh.begin(), ngh.end(), ngh_t(joiner, s),
-                              comp_dist) -
+                              comp_sim) -
              ngh.begin();
     }
   }
@@ -231,7 +231,7 @@ private:
 
     // search ub
     const std::size_t ub =
-        std::upper_bound(nbd.begin(), nbd.end(), joiner_elem, comp_dist) -
+        std::upper_bound(nbd.begin(), nbd.end(), joiner_elem, comp_sim) -
         nbd.begin();
 
     // to prevent perturbation of nbd, the probability of replacement
@@ -247,9 +247,9 @@ private:
     }
 
     // search lb
-    const std::size_t lb = std::lower_bound(nbd.begin(), nbd.begin() + ub,
-                                            joiner_elem, comp_dist) -
-                           nbd.begin();
+    const std::size_t lb =
+        std::lower_bound(nbd.begin(), nbd.begin() + ub, joiner_elem, comp_sim) -
+        nbd.begin();
 
     if (K2 > 0 && nbd[lb].sim == s) {
       for (std::size_t i = lb; i < ub; ++i) {

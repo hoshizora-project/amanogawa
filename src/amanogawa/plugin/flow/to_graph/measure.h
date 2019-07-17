@@ -17,18 +17,25 @@ template <class _data_t, class _sim_t> struct Measure {
 };
 
 struct CosineMeasure : Measure<std::vector<double>, double> {
-  const double p;
-
-  explicit CosineMeasure(const double &p) : p(p) {}
+  explicit CosineMeasure() {}
 
   // FIXME: Vectorize
   inline sim_t operator()(const std::vector<double> &l,
                           const std::vector<double> &r) const override {
-    double diff = 0;
-    for (size_t i = 0, end = l.size(); i < end; ++i) {
-      diff += std::pow(std::abs(l[i] - r[i]), p);
+    auto ll = 0.;
+    for (const auto &el : l) {
+      ll += el * el;
     }
-    return std::pow(diff, 1 / p);
+    auto rr = 0.;
+    for (const auto &el : r) {
+      rr += el * el;
+    }
+    auto lr = 0.;
+    for (size_t i = 0, end = l.size(); i < end; ++i) {
+      lr += l[i] * r[i];
+    }
+
+    return lr / (std::pow(ll, 0.5) * std::pow(rr, 0.5));
   }
 };
 
