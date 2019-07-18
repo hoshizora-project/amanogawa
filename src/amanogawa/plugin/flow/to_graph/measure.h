@@ -17,18 +17,25 @@ template <class _data_t, class _sim_t> struct Measure {
 };
 
 struct CosineMeasure : Measure<std::vector<double>, double> {
-  const double p;
-
-  explicit CosineMeasure(const double &p) : p(p) {}
+  explicit CosineMeasure() {}
 
   // FIXME: Vectorize
   inline sim_t operator()(const std::vector<double> &l,
                           const std::vector<double> &r) const override {
-    double diff = 0;
-    for (size_t i = 0, end = l.size(); i < end; ++i) {
-      diff += std::pow(std::abs(l[i] - r[i]), p);
+    auto ll = 0.;
+    for (const auto &el : l) {
+      ll += el * el;
     }
-    return std::pow(diff, 1 / p);
+    auto rr = 0.;
+    for (const auto &el : r) {
+      rr += el * el;
+    }
+    auto lr = 0.;
+    for (size_t i = 0, end = l.size(); i < end; ++i) {
+      lr += l[i] * r[i];
+    }
+
+    return lr / (std::pow(ll, 0.5) * std::pow(rr, 0.5));
   }
 };
 
@@ -44,27 +51,30 @@ struct Doc2VecMeasure : Measure<std::string, double> {
   }
 };
 
-struct BoWMeasure : Measure<std::unordered_map<std::string, int>, double> {
+struct BoWCosineMeasure : Measure<std::unordered_map<std::string, int>, double> {
   using sim_t = double;
-  const double p;
 
-  explicit BoWMeasure(const double &p) : p(p) {}
+  explicit BoWCosineMeasure() {}
 
   // FIXME
   inline sim_t operator()(const data_t &l, const data_t &r) const override {
     data_t bag(l);
     bag.insert(r.begin(), r.end());
 
-    double diff = 0;
+    auto ll = 0.;
+    auto rr = 0.;
+    auto lr = 0.;
     for (const auto &el : bag) {
       const auto word = el.first;
       const auto li = l.find(word);
       const auto ri = r.find(word);
       const auto lv = li != l.end() ? li->second : 0;
       const auto rv = ri != r.end() ? ri->second : 0;
-      diff += std::pow(std::abs(lv - rv), p);
+      ll += lv * lv;
+      rr += rv * rv;
+      lr += lv * rv;
     }
-    return std::pow(diff, 1 / p);
+    return lr / (std::pow(ll, 0.5) * std::pow(rr, 0.5));
   }
 
   static std::unique_ptr<MeCab::Tagger> tagger;
@@ -74,7 +84,7 @@ struct BoWMeasure : Measure<std::unordered_map<std::string, int>, double> {
     return split(result, ' ');
   }
 };
-auto BoWMeasure::tagger =
+auto BoWCosineMeasure::tagger =
     std::unique_ptr<MeCab::Tagger>(MeCab::createTagger("-Owakati"));
 } // namespace to_graph
 } // namespace flow
