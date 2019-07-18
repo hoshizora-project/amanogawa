@@ -8,7 +8,7 @@ RUN apt update \
       git make cmake clang-6.0 lldb-6.0 \
       libboost-dev libboost-system-dev libboost-filesystem-dev \
       python3-dev python3-pip \
-      libmecab-dev
+      libmecab-dev mecab-ipadic-utf8
 RUN ln -s /usr/bin/clang++-6.0 /usr/bin/clang++ \
 &&  ln -s /usr/bin/lldb-6.0 /usr/bin/lldb \
 &&  ln -s /usr/bin/lldb-mi-6.0 /usr/bin/lldb-mi
