@@ -34,7 +34,6 @@ struct FlowToGraphPlugin : FlowPlugin {
     const auto knn_mode =
         knn_config->get_as<std::string>("mode").value_or("approx");
     const auto k = knn_config->get_as<uint32_t>("k").value_or(3);
-    const auto p = knn_config->get_as<double>("p").value_or(1.5);
 
     // others
     const auto col_from =
@@ -141,18 +140,18 @@ struct FlowToGraphPlugin : FlowPlugin {
         const auto delta = knn_config->get_as<double>("delta").value_or(0.01);
 
         // BoW
-        std::vector<BoWMeasure::data_t> wakati_maps;
+        std::vector<BoWCosineMeasure::data_t> wakati_maps;
         for (const auto &sentence : rows) {
-          const auto words = BoWMeasure::wakati(sentence);
-          BoWMeasure::data_t wakati_map{};
+          const auto words = BoWCosineMeasure::wakati(sentence);
+          BoWCosineMeasure::data_t wakati_map{};
           for (const auto &word : words) {
             wakati_map[word]++;
           }
           wakati_maps.emplace_back(wakati_map);
         }
 
-        auto nnDescent = NNDescent<BoWMeasure::data_t, BoWMeasure>(
-            k, BoWMeasure(p), rho, perturb, num_random_join);
+        auto nnDescent = NNDescent<BoWCosineMeasure::data_t, BoWCosineMeasure>(
+            k, BoWCosineMeasure(), rho, perturb, num_random_join);
         nnDescent.exec(wakati_maps, epoch, delta);
 
         for (size_t i = 0; i < num_entries; ++i) {
