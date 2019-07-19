@@ -73,7 +73,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='amanogawa',
-    version='0.0.1a0',
+    version='0.0.1a1',
     url='https://github.com/hoshizora-project/amanogawa',
     description='Flexible graph construction and data pre-processing engine',
     long_description='To appear',
